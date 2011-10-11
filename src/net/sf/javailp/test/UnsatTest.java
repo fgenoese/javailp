@@ -22,6 +22,7 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
+import net.sf.javailp.SolverFactoryGurobi;
 
 import org.junit.Test;
 
@@ -35,6 +36,11 @@ public class UnsatTest {
 	@Test
 	public void testGLPK() {
 		testUnsat(new SolverFactoryGLPK());
+	}
+	
+	@Test
+	public void testGurobi() {
+		testUnsat(new SolverFactoryGurobi());
 	}
 
 	protected void testUnsat(SolverFactory factory) {
@@ -59,8 +65,8 @@ public class UnsatTest {
 			problem.setVarType(i, Boolean.class);
 		}
 
-		problem.add(linear, "=", 5);
-		problem.add(linear, "=", 6);
+		problem.add("1", linear, "=", 5);
+		problem.add("2", linear, "=", 6);
 
 		problem.setObjective(linear);
 

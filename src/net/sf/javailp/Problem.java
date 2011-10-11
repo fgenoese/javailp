@@ -26,7 +26,7 @@ import java.util.Set;
  * The class {@code Problem} represents a linear problem consisting of multiple
  * constraints and up to one objective function.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public class Problem {
@@ -170,46 +170,6 @@ public class Problem {
 			variables.add(term.getVariable());
 		}
 		constraints.add(constraint);
-	}
-
-	/**
-	 * Adds a constraint.
-	 * 
-	 * @param lhs
-	 *            the left-hand-side linear expression
-	 * @param operator
-	 *            the operator
-	 * @param rhs
-	 *            the right-hand-side number
-	 */
-	public void add(Linear lhs, Operator operator, Number rhs) {
-		Linear linear = new Linear(lhs);
-		Constraint constraint = new Constraint(linear, operator, rhs);
-		add(constraint);
-	}
-
-	/**
-	 * Adds a constraint.
-	 * 
-	 * @param lhs
-	 *            the left-hand-side linear expression
-	 * @param operator
-	 *            the operator (<=,=,>=)
-	 * @param rhs
-	 *            the right-hand-side number
-	 */
-	public void add(Linear lhs, String operator, Number rhs) {
-		final Operator o;
-		if (operator.equals("<=")) {
-			o = Operator.LE;
-		} else if (operator.equals("=")) {
-			o = Operator.EQ;
-		} else if (operator.equals(">=")) {
-			o = Operator.GE;
-		} else {
-			throw new IllegalArgumentException("Unknown Boolean operator: " + operator);
-		}
-		add(lhs, o, rhs);
 	}
 
 	/**

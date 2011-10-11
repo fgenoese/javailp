@@ -17,7 +17,7 @@ package net.sf.javailp;
 /**
  * The class {@code Constraint} represent a linear constraint.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public class Constraint {
@@ -26,49 +26,6 @@ public class Constraint {
 	protected final Linear lhs;
 	protected final Operator operator;
 	protected final Number rhs;
-
-	/**
-	 * Constructs a {@code Constraint}.
-	 * 
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator
-	 * @param rhs
-	 *            the right hand side
-	 */
-	public Constraint(Linear lhs, Operator operator, Number rhs) {
-		this.lhs = lhs;
-		this.operator = operator;
-		this.rhs = rhs;
-		this.name = this.toString();
-	}
-
-	/**
-	 * Constructs a {@code Constraint}.
-	 * 
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator ("<=","=",">=")
-	 * @param rhs
-	 *            the right hand side
-	 */
-	public Constraint(Linear lhs, String operator, Number rhs) {
-		if (operator.equals("<=")) {
-			this.operator = Operator.LE;
-		} else if (operator.equals("=")) {
-			this.operator = Operator.EQ;
-		} else if (operator.equals(">=")) {
-			this.operator = Operator.GE;
-		} else {
-			throw new IllegalArgumentException("Unknown Boolean operator: "
-					+ operator);
-		}
-		this.lhs = lhs;
-		this.rhs = rhs;
-		this.name = this.toString();
-	}
 	
 	/**
 	 * Constructs a {@code Constraint}.
@@ -115,7 +72,6 @@ public class Constraint {
 		this.name = name;
 		this.lhs = lhs;
 		this.rhs = rhs;
-
 	}
 
 	/**
