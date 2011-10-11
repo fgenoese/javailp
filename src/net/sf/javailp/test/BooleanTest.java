@@ -28,7 +28,6 @@ import net.sf.javailp.SolverFactoryGLPK;
 import net.sf.javailp.SolverFactoryGurobi;
 import net.sf.javailp.SolverFactoryLpSolve;
 import net.sf.javailp.SolverFactoryMiniSat;
-import net.sf.javailp.SolverFactoryMosek;
 import net.sf.javailp.SolverFactorySAT4J;
 
 import org.junit.Test;
@@ -63,16 +62,6 @@ public class BooleanTest {
 	@Test
 	public void testLpSolveMax() {
 		testMax(new SolverFactoryLpSolve());
-	}
-
-	@Test
-	public void testMosekMin() {
-		testMin(new SolverFactoryMosek());
-	}
-
-	@Test
-	public void testMosekMax() {
-		testMax(new SolverFactoryMosek());
 	}
 
 	@Test

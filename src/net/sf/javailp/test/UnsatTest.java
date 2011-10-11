@@ -23,7 +23,6 @@ import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
 import net.sf.javailp.SolverFactoryLpSolve;
-import net.sf.javailp.SolverFactoryMosek;
 import net.sf.javailp.SolverFactorySAT4J;
 
 import org.junit.Test;
@@ -43,11 +42,6 @@ public class UnsatTest {
 	@Test
 	public void testLpSolve() {
 		testUnsat(new SolverFactoryLpSolve());
-	}
-
-	@Test
-	public void testMosek() {
-		testUnsat(new SolverFactoryMosek());
 	}
 
 	@Test
