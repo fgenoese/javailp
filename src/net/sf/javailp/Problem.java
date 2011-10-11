@@ -33,7 +33,7 @@ public class Problem {
 
 	protected Linear objective = null;
 	protected OptType optType = OptType.MIN;
-	protected final List<Constraint> constraints = new ArrayList<Constraint>();
+	protected final Map<String, Constraint> constraints = new HashMap<String, Constraint>();
 
 	protected final Set<Object> variables = new HashSet<Object>();
 	protected final Map<Object, VarType> varType = new HashMap<Object, VarType>();
@@ -129,7 +129,7 @@ public class Problem {
 	 * @return the constraints.
 	 */
 	public List<Constraint> getConstraints() {
-		return constraints;
+		return new ArrayList<Constraint>(constraints.values());
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class Problem {
 	}
 
 	/**
-	 * Adds a constraint.
+	 * Adds or updates a constraint to the map of constraints.
 	 * 
 	 * @param constraint
 	 *            the constraint to be added
@@ -169,11 +169,11 @@ public class Problem {
 		for (Term term : constraint.getLhs()) {
 			variables.add(term.getVariable());
 		}
-		constraints.add(constraint);
+		constraints.put(constraint.getName(), constraint);
 	}
 
 	/**
-	 * Adds a constraint.
+	 * Adds or updates a constraint to the map of constraints.
 	 * 
 	 * @param name
 	 *            the name of the constraint
@@ -191,7 +191,7 @@ public class Problem {
 	}
 
 	/**
-	 * Adds a constraint.
+	 * Adds or updates a constraint to the map of constraints.
 	 * 
 	 * @param name
 	 *            the name of the constraint
@@ -217,19 +217,15 @@ public class Problem {
 	}
 	
 	/**
-	 * Adds a constraint.
+	 * Returns the constraint from the map of constraints with the key @param name.
 	 * 
 	 * @param name
-	 *            the name of the constraint
-	 * @param lhs
-	 *            the left-hand-side linear expression
-	 * @param operator
-	 *            the operator
-	 * @param rhs
-	 *            the right-hand-side number
+	 *            the name (key) of the constraint to be returned
+	 *            
+	 * @return the constraint or {@code null} if the key does not exist
 	 */
-	public void set(String name, Constraint constraint) {
-		
+	public Constraint get(String name) {
+		return constraints.get(name);
 	}
 
 	/**
