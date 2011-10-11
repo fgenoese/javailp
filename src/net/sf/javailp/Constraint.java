@@ -161,7 +161,7 @@ public class Constraint {
 	 */
 	@Override
 	public String toString() {
-		return lhs.toString() + " " + operator.toString() + " " + rhs;
+		return "\n" + lhs.toString() + " " + operator.toString() + " " + rhs;
 	}
 	
 	/**

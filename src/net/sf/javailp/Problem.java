@@ -255,6 +255,22 @@ public class Problem {
 		}
 		add(name, lhs, o, rhs);
 	}
+	
+	/**
+	 * Adds a constraint.
+	 * 
+	 * @param name
+	 *            the name of the constraint
+	 * @param lhs
+	 *            the left-hand-side linear expression
+	 * @param operator
+	 *            the operator
+	 * @param rhs
+	 *            the right-hand-side number
+	 */
+	public void set(String name, Constraint constraint) {
+		
+	}
 
 	/**
 	 * Returns the variable type.

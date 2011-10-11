@@ -45,5 +45,15 @@ public abstract class AbstractSolver implements Solver {
 	public void setParameter(Object parameter, Object value) {
 		parameters.put(parameter, value);
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem,
+	 * java.util.Map)
+	 */
+	public Result solve(Problem problem, Map<String,Double> startingSolution) {
+		return solve(problem);
+	}
 
 }

@@ -38,6 +38,11 @@ public interface Solver {
 	 * Identifier for the post-solve value.
 	 */
 	public static final int POSTSOLVE = 2;
+	
+	/**
+	 * Identifier for the post-solve value.
+	 */
+	public static final int MIPGAP = 3;
 
 	/**
 	 * Sets a parameter.
@@ -65,5 +70,17 @@ public interface Solver {
 	 * @return the result
 	 */
 	public Result solve(Problem problem);
+	
+	/**
+	 * Solve the optimization problem with a starting solution. Returns {@code null} if there exists no
+	 * feasible solution for the problem.
+	 * 
+	 * @param problem
+	 *            the optimization problem
+	 * @param startingSolution
+	 * 			  the starting solution for a set of variables
+	 * @return the result
+	 */
+	public Result solve(Problem problem, Map<String,Double> startingSolution);
 
 }

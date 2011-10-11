@@ -15,16 +15,17 @@
 package net.sf.javailp;
 
 import gurobi.GRB;
+import gurobi.GRBConstr;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import gurobi.GRB.DoubleAttr;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -34,21 +35,48 @@ import java.util.Set;
  * 
  */
 public class SolverGurobi extends AbstractSolver {
-
+	
+	private GRBEnv env;
+	
+	/**
+	 * Constructs a {@code SolverGurobi}.
+	 * 
+	 */
+	public SolverGurobi() {
+		try {
+			env = new GRBEnv("gurobi.log");
+		} catch (GRBException e) {
+			System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+			throw new OptimizationException();
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
+		return solve(problem, null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem,java.util.Map)
+	 */
+	public Result solve(Problem problem, Map<String,Double> startingSolution) {
 
 		Map<Object, GRBVar> objToVar = new HashMap<Object, GRBVar>();
 		Map<GRBVar, Object> varToObj = new HashMap<GRBVar, Object>();
-		// Map<String, GRBVar> nameToVar = new HashMap<String, GRBVar>(nvar);
+		Map<String, Object> nameToObj = new HashMap<String, Object>();
+		Map<String, Constraint> nameToCon = new HashMap<String, Constraint>();
+		
+		if (env == null) {
+			throw new OptimizationException();
+		}
 
 		try {
-			GRBEnv env = new GRBEnv("gurobi.log");
-
 			initWithParameters(env);
 
 			GRBModel model = new GRBModel(env);
@@ -98,11 +126,22 @@ public class SolverGurobi extends AbstractSolver {
 				}
 
 				GRBVar var = model.addVar(lb, ub, coeff, type, name);
+								
 				objToVar.put(variable, var);
 				varToObj.put(var, variable);
+				nameToObj.put(name, variable);
 				i++;
 			}
 			model.update();
+			
+			if (startingSolution != null) {
+				for (Object variable : problem.getVariables()) {
+					final String name = variable.toString();
+					if (startingSolution.get(name) != null) {
+						objToVar.get(variable).set(DoubleAttr.Start, startingSolution.get(name));
+					}
+				}
+			}
 
 			for (Constraint constraint : problem.getConstraints()) {
 				GRBLinExpr expr = new GRBLinExpr();
@@ -122,6 +161,7 @@ public class SolverGurobi extends AbstractSolver {
 
 				model.addConstr(expr, operator, constraint.getRhs()
 						.doubleValue(), constraint.getName());
+				nameToCon.put(constraint.getName(), constraint);
 			}
 
 			for(Hook hook: hooks){
@@ -129,6 +169,9 @@ public class SolverGurobi extends AbstractSolver {
 			}
 			
 			model.optimize();
+			if (model.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
+				throw new OptimizationException();
+			}
 
 			Result result;
 			if (problem.getObjective() != null) {
@@ -136,26 +179,70 @@ public class SolverGurobi extends AbstractSolver {
 			} else {
 				result = new ResultImpl();
 			}
-
-			for (Entry<Object, GRBVar> entry : objToVar.entrySet()) {
-				Object variable = entry.getKey();
-				GRBVar var = entry.getValue();
-
-				double primalValue = var.get(GRB.DoubleAttr.X);
-
-				if (problem.getVarType(variable).isInt()) {
-					int v = (int) Math.round(primalValue);
-					result.putPrimalValue(variable, v);
-				} else {
-					result.putPrimalValue(variable, primalValue);
+			
+			// post-solve: LP relaxation with fixed integers
+			Object postsolve = parameters.get(Solver.POSTSOLVE);
+			if (postsolve != null && ((Number)postsolve).intValue() != 0 ) {
+				GRBModel fixed = model.fixedModel();
+				fixed.getEnv().set(GRB.IntParam.Presolve, 0);
+				fixed.optimize();
+				if (fixed.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
+					throw new OptimizationException();
 				}
+				
+				GRBVar[] variables		  	= fixed.getVars();
+				double[] primalValues     	= fixed.get(GRB.DoubleAttr.X, variables);
+				double[] dualValues			= fixed.get(GRB.DoubleAttr.RC, variables);
+			    String[] variableNames		= fixed.get(GRB.StringAttr.VarName, variables);
+				
+			    for (i = 0; i < variables.length; i++) {
+			    	Object variable = nameToObj.get(variableNames[i]);
+			    	
+			    	if (problem.getVarType(variable).isInt()) {
+			    		int v = (int) Math.round(primalValues[i]);
+			    		result.putPrimalValue(variable, v);
+			    	} else {
+			    		result.putPrimalValue(variable, primalValues[i]);
+			    	}
+			    	result.putDualValue(variable, dualValues[i]);
+			    }
+			    
+			    GRBConstr[] constraints		= fixed.getConstrs();
+			    double[] shadowPrices		= fixed.get(GRB.DoubleAttr.Pi, constraints);
+			    String[] constraintNames	= fixed.get(GRB.StringAttr.ConstrName, constraints);
+			    
+			    for (i = 0; i < variables.length; i++) {
+			    	Constraint con = nameToCon.get(constraintNames[i]);
+			    	result.putDualValue(con.getName(), shadowPrices[i]);
+			    }
+			    
+			    fixed.dispose();
+			    
+			    return result;
+			} // end post-solve
+
+			GRBVar[] variables 		= model.getVars();
+			double[] primalValues	= model.get(GRB.DoubleAttr.X, variables);
+			String[] variableNames 	= model.get(GRB.StringAttr.VarName, variables);
+			
+			for (i = 0; i < variables.length; i++) {
+				Object variable = nameToObj.get(variableNames[i]);
+				
+				if (problem.getVarType(variable).isInt()) {
+		    		int v = (int) Math.round(primalValues[i]);
+		    		result.putPrimalValue(variable, v);
+		    	} else {
+		    		result.putPrimalValue(variable, primalValues[i]);
+		    	}
 			}
+			
+			model.dispose();
 
 			return result;
 
 		} catch (GRBException e) {
-			e.printStackTrace();
-			return null;
+			System.out.println("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+			throw new OptimizationException();
 		}
 
 	}
@@ -163,6 +250,7 @@ public class SolverGurobi extends AbstractSolver {
 	protected void initWithParameters(GRBEnv env) throws GRBException {
 		Object verbose = parameters.get(Solver.VERBOSE);
 		Object timeout = parameters.get(Solver.TIMEOUT);
+		Object mipgap = parameters.get(Solver.MIPGAP);
 
 		if (verbose != null && verbose instanceof Number) {
 			Number number = (Number) verbose;
@@ -183,6 +271,16 @@ public class SolverGurobi extends AbstractSolver {
 			double value = number.doubleValue();
 			env.set(GRB.DoubleParam.TimeLimit, value);
 		}
+		
+		if (mipgap != null && mipgap instanceof Number) {
+			Number number = (Number) mipgap;
+			double value = number.doubleValue();
+			env.set(GRB.DoubleParam.MIPGap, value);
+		}
+		
+		// -1=automatic, 0=primal simplex, 1=dual simplex, 2=barrier, 3=concurrent, 4=deterministic concurrent
+		// standard MIP: dual simplex
+		//env.set(GRB.IntParam.Method, 2);
 	}
 
 	/**

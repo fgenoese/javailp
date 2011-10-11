@@ -88,7 +88,7 @@ public class SolverCPLEX extends AbstractSolver {
 
 		try {
 			IloCplex cplex = new IloCplex();
-
+			
 			initWithParameters(cplex);
 
 			for (Object variable : problem.getVariables()) {
@@ -155,7 +155,7 @@ public class SolverCPLEX extends AbstractSolver {
 
 			if (!cplex.solve()) {
 				cplex.end();
-				return null;
+				throw new OptimizationException();
 			}
 
 			final Result result;
@@ -186,20 +186,22 @@ public class SolverCPLEX extends AbstractSolver {
 
 		} catch (IloException e) {
 			e.printStackTrace();
+			throw new OptimizationException();
 		}
 
-		return null;
 	}
 
 	protected void initWithParameters(IloCplex cplex) throws IloException {
 		Object timeout = parameters.get(Solver.TIMEOUT);
 		Object verbose = parameters.get(Solver.VERBOSE);
+		Object mipgap = parameters.get(Solver.MIPGAP);
 
 		if (timeout != null && timeout instanceof Number) {
 			Number number = (Number) timeout;
 			double value = number.doubleValue();
 			cplex.setParam(DoubleParam.TiLim, value);
 		}
+		
 		if (verbose != null && verbose instanceof Number) {
 			Number number = (Number) verbose;
 			int value = number.intValue();
@@ -209,6 +211,16 @@ public class SolverCPLEX extends AbstractSolver {
 			}
 		}
 
+		if (mipgap != null && mipgap instanceof Number) {
+			Number number = (Number) mipgap;
+			double value = number.doubleValue();
+			cplex.setParam(DoubleParam.EpGap, value);
+		}
+		
+		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));
+		System.out.println("parallel mode: "+cplex.getParam(IntParam.ParallelMode));
+		cplex.setParam(IntParam.Threads, 8);
+		System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));*/
 	}
 
 	protected void convert(Linear linear, IloLinearNumExpr lin, Map<Object, IloNumVar> varToNum) throws IloException {
