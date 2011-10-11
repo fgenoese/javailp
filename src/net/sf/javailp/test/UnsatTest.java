@@ -22,7 +22,6 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
-import net.sf.javailp.SolverFactoryLpSolve;
 import net.sf.javailp.SolverFactorySAT4J;
 
 import org.junit.Test;
@@ -37,11 +36,6 @@ public class UnsatTest {
 	@Test
 	public void testCPLEX() {
 		testUnsat(new SolverFactoryCPLEX());
-	}
-
-	@Test
-	public void testLpSolve() {
-		testUnsat(new SolverFactoryLpSolve());
 	}
 
 	@Test

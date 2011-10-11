@@ -26,7 +26,6 @@ import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
 import net.sf.javailp.SolverFactoryGurobi;
-import net.sf.javailp.SolverFactoryLpSolve;
 import net.sf.javailp.SolverFactoryMiniSat;
 import net.sf.javailp.SolverFactorySAT4J;
 
@@ -52,16 +51,6 @@ public class BooleanTest {
 	@Test
 	public void testGLPKMax() {
 		testMax(new SolverFactoryGLPK());
-	}
-
-	@Test
-	public void testLpSolveMin() {
-		testMin(new SolverFactoryLpSolve());
-	}
-
-	@Test
-	public void testLpSolveMax() {
-		testMax(new SolverFactoryLpSolve());
 	}
 
 	@Test
