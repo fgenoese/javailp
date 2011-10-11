@@ -22,16 +22,10 @@ import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverFactoryGLPK;
-import net.sf.javailp.SolverFactorySAT4J;
 
 import org.junit.Test;
 
 public class UnsatTest {
-
-	@Test
-	public void testSAT4J() {
-		testUnsat(new SolverFactorySAT4J());
-	}
 
 	@Test
 	public void testCPLEX() {
