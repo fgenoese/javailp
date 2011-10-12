@@ -16,7 +16,7 @@ import org.gnu.glpk.glp_prob;
 import org.gnu.glpk.glp_smcp;
 
 /**
- * @author fg
+ * @author fgenoese
  *
  */
 public class ProblemGLPK extends Problem {

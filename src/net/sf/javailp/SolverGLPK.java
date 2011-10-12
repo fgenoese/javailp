@@ -22,7 +22,7 @@ import org.gnu.glpk.glp_smcp;
 /**
  * The {@code SolverGLPK} is the {@code Solver} GLPK.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public class SolverGLPK extends AbstractSolver {
