@@ -18,35 +18,39 @@ package net.sf.javailp;
  * The {@code Term} is the basic element the {@link Linear}. It is a coefficient
  * and its variable.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public class Term {
 
-	protected final Object variable;
+	protected final String variableName;
 	protected final Number coefficient;
 
 	/**
 	 * Constructs a {@code Term}.
 	 * 
-	 * @param variable
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @param coefficient
 	 *            the coefficient
 	 */
-	public Term(Object variable, Number coefficient) {
+	public Term(String variableName, Number coefficient) {
 		super();
-		this.variable = variable;
+		if (coefficient == null) {
+			throw new IllegalArgumentException("The variable " + variableName
+					+ " has no valid coefficient.");
+		}
+		this.variableName = variableName;
 		this.coefficient = coefficient;
 	}
 
 	/**
-	 * Returns the variable.
+	 * Returns the variable name.
 	 * 
-	 * @return the variable
+	 * @return the variable name
 	 */
-	public Object getVariable() {
-		return variable;
+	public String getVariableName() {
+		return variableName;
 	}
 
 	/**

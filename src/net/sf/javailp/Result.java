@@ -28,80 +28,52 @@ public interface Result {
 	 * @return the objective value
 	 */
 	public Number getObjective();
-
-	/**
-	 * Returns the primal value for a specific var as a boolean. (value!=0)
-	 * 
-	 * @param var
-	 *            the var
-	 * @return {@code true} if the value is not 0
-	 */
-	public boolean getBoolean(Object var);
-
-	/**
-	 * Returns the primal value of the variable.
-	 * 
-	 * @param var
-	 *            the variable
-	 * @return the resulting value
-	 */
-	public Number get(Object var);
-	
-	/**
-	 * Sets the primal value of the variable.
-	 * 
-	 * @param var
-	 *            the variable
-	 * @param value
-	 *            the value
-	 */
-	public void put(Object var, Number value);
 	
 	/**
 	 * Returns the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @return the resulting value
 	 */
-	public Number getPrimalValue(Object var);
+	public Number getPrimalValue(String variableName);
 	
 	/**
 	 * Sets the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @param value
 	 *            the value
 	 */
-	public void putPrimalValue(Object var, Number value);
+	public void putPrimalValue(String variableName, Number value);
 	
 	/**
 	 * Returns the dual value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @return the resulting value
 	 */
-	public Number getDualValue(Object var);
+	public Number getDualValue(String variableName);
 	
 	/**
 	 * Sets the dual value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @param value
 	 *            the value
 	 */
-	public void putDualValue(Object var, Number value);
+	public void putDualValue(String variableName, Number value);
 
 	/**
 	 * Returns {@code true} if the result contains the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 * @return {@code true} if the result contains the variable
 	 */
-	public Boolean containsVar(Object var);
+	public Boolean containsVar(String variableName);
 
 }

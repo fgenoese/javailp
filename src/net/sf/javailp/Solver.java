@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * The {@code Solver}.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public interface Solver {
@@ -47,22 +47,29 @@ public interface Solver {
 	/**
 	 * Sets a parameter.
 	 * 
-	 * @param parameter
-	 *            the parameter
+	 * @param identifier
+	 *            the identifier
 	 * @param value
 	 *            the value
 	 */
-	public void setParameter(Object parameter, Object value);
+	public void setParameter(Integer identifier, Number value);
 
 	/**
 	 * Returns all set parameters.
 	 * 
 	 * @return the map of the parameters
 	 */
-	public Map<Object, Object> getParameters();
+	public Map<Integer, Number> getParameters();
+	
+	/**
+	 * Returns the opimization problem for this solver.
+	 * 
+	 * @return the optimization problem
+	 */
+	public Problem getProblem();
 
 	/**
-	 * Solve the optimization problem. Returns {@code null} if there exists no
+	 * Solves the optimization problem. Returns {@code null} if there exists no
 	 * feasible solution for the problem.
 	 * 
 	 * @param problem
@@ -70,17 +77,5 @@ public interface Solver {
 	 * @return the result
 	 */
 	public Result solve(Problem problem);
-	
-	/**
-	 * Solve the optimization problem with a starting solution. Returns {@code null} if there exists no
-	 * feasible solution for the problem.
-	 * 
-	 * @param problem
-	 *            the optimization problem
-	 * @param startingSolution
-	 * 			  the starting solution for a set of variables
-	 * @return the result
-	 */
-	public Result solve(Problem problem, Map<String,Double> startingSolution);
 
 }

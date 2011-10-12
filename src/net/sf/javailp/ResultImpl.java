@@ -26,31 +26,10 @@ import java.util.Map;
  */
 public class ResultImpl implements Result {
 
-	protected Map<Object,Number> primalValues;
-	protected Map<Object,Number> dualValues;
+	protected Map<String, Number> primalValues;
+	protected Map<String, Number> dualValues;
 	protected Number objectiveValue = null;
 	protected Linear objectiveFunction = null;
-
-	/**
-	 * Constructs a {@code ResultImpl} for a {@code Problem} without objective
-	 * function.
-	 */
-	public ResultImpl() {
-		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
-	}
-
-	/**
-	 * Constructs a {@code ResultImpl} for a {@code Problem} with objective
-	 * function and the optimal value.
-	 */
-	public ResultImpl(Number objectiveValue) {
-		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
-		this.objectiveValue = objectiveValue;
-	}
 
 	/**
 	 * Constructs a {@code ResultImpl} for a {@code Problem} with an objective
@@ -58,8 +37,8 @@ public class ResultImpl implements Result {
 	 */
 	public ResultImpl(Linear objectiveFunction) {
 		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
+		this.primalValues = new HashMap<String, Number>();
+		this.dualValues = new HashMap<String, Number>();
 		this.objectiveFunction = objectiveFunction;
 	}
 
@@ -78,83 +57,50 @@ public class ResultImpl implements Result {
 			return null;
 		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Result#getBoolean(java.lang.Object)
+	 * @see net.sf.javailp.Result#getPrimalValue(java.lang.String)
 	 */
-	public boolean getBoolean(Object key) {
-		Number number = primalValues.get(key);
-		double v = number.doubleValue();
-		if (v == 0) {
-			return false;
-		} else {
-			return true;
-		}
+	public Number getPrimalValue(String variableName) {
+		return primalValues.get(variableName);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Result#get(java.lang.Object)
+	 * @see net.sf.javailp.Result#putPrimalValue(java.lang.String, java.lang.Number)
 	 */
-	public Number get(Object key) {
-		return primalValues.get(key);
+	public void putPrimalValue(String variableName, Number value) {
+		primalValues.put(variableName, value);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Result#put(java.lang.Object, java.lang.Number)
+	 * @see net.sf.javailp.Result#getDualValue(java.lang.String)
 	 */
-	public void put(Object key, Number value) {
-		primalValues.put(key,value);
+	public Number getDualValue(String variableName) {
+		return dualValues.get(variableName);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Result#getPrimalValue(java.lang.Object)
+	 * @see net.sf.javailp.Result#putDualValue(java.lang.String, java.lang.Number)
 	 */
-	public Number getPrimalValue(Object key) {
-		return primalValues.get(key);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.javailp.Result#putPrimalValue(java.lang.Object, java.lang.Number)
-	 */
-	public void putPrimalValue(Object key, Number value) {
-		primalValues.put(key,value);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.javailp.Result#getDualValue(java.lang.Object)
-	 */
-	public Number getDualValue(Object key) {
-		return dualValues.get(key);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.javailp.Result#putDualValue(java.lang.Object, java.lang.Number)
-	 */
-	public void putDualValue(Object key, Number value) {
-		dualValues.put(key,value);
+	public void putDualValue(String variableName, Number value) {
+		dualValues.put(variableName, value);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Result#containsVar(java.lang.Object)
+	 * @see net.sf.javailp.Result#containsVar(java.lang.String)
 	 */
-	public Boolean containsVar(Object var) {
-		return primalValues.containsKey(var);
+	public Boolean containsVar(String variableName) {
+		return primalValues.containsKey(variableName);
 	}
 
 	/*

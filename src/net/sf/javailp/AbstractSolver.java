@@ -25,35 +25,25 @@ import java.util.Map;
  */
 public abstract class AbstractSolver implements Solver {
 
-	protected final Map<Object, Object> parameters = new HashMap<Object, Object>();
+	protected final Map<Integer, Number> parameters = new HashMap<Integer, Number>();
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see net.sf.javailp.Solver#getParameters()
 	 */
-	public Map<Object, Object> getParameters() {
+	public Map<Integer, Number> getParameters() {
 		return parameters;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#setParameter(java.lang.Object,
-	 * java.lang.Object)
+	 * @see net.sf.javailp.Solver#setParameter(java.lang.Integer,
+	 * java.lang.Number)
 	 */
-	public void setParameter(Object parameter, Object value) {
-		parameters.put(parameter, value);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem,
-	 * java.util.Map)
-	 */
-	public Result solve(Problem problem, Map<String,Double> startingSolution) {
-		return solve(problem);
+	public void setParameter(Integer identifier, Number value) {
+		parameters.put(identifier, value);
 	}
 
 }

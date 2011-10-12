@@ -15,17 +15,8 @@
 package net.sf.javailp;
 
 import ilog.concert.IloException;
-import ilog.concert.IloLinearNumExpr;
-import ilog.concert.IloNumVar;
-import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 /**
  * The {@code SolverCPLEX} is the {@code Solver} CPLEX.
@@ -34,47 +25,39 @@ import java.util.Map.Entry;
  * 
  */
 public class SolverCPLEX extends AbstractSolver {
-
+	
+	private IloCplex cplex;
+	private Problem problem;
+	
 	/**
-	 * The {@code Hook} for the {@code SolverCPLEX}.
-	 * 
-	 * @author lukasiewycz
+	 * Constructs a {@code SolverCPLEX}.
 	 * 
 	 */
-	public interface Hook {
-
-		/**
-		 * This method is called once before the optimization and allows to
-		 * change some internal settings.
-		 * 
-		 * @param cplex
-		 *            the cplex solver
-		 * @param varToNum
-		 *            the map of variables to cplex specific variables
-		 */
-		public void call(IloCplex cplex, Map<Object, IloNumVar> varToNum);
+	public SolverCPLEX() {
+		super();
+		try {
+			this.cplex = new IloCplex();
+			this.problem = new ProblemCPLEX(this.cplex);
+		} catch (IloException e) {
+			throw new OptimizationException(e.getMessage());
+		}
 	}
-
-	protected final Set<Hook> hooks = new HashSet<Hook>();
-
-	/**
-	 * Adds a hook.
+	
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param hook
-	 *            the hook to be added
+	 * @see net.sf.javailp.Solver#getProblem()
 	 */
-	public void addHook(Hook hook) {
-		hooks.add(hook);
-	}
-
-	/**
-	 * Removes a hook
-	 * 
-	 * @param hook
-	 *            the hook to be removed
-	 */
-	public void removeHook(Hook hook) {
-		hooks.remove(hook);
+	public Problem getProblem() {
+		if (this.problem == null) {
+			try {
+				this.cplex = new IloCplex();
+				this.problem = new ProblemCPLEX(this.cplex);
+			} catch (IloException e) {
+				throw new OptimizationException(e.getMessage());
+			}
+		}
+		return this.problem;
 	}
 
 	/*
@@ -83,115 +66,28 @@ public class SolverCPLEX extends AbstractSolver {
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
-		Map<IloNumVar, Object> numToVar = new HashMap<IloNumVar, Object>();
-		Map<Object, IloNumVar> varToNum = new HashMap<Object, IloNumVar>();
-
 		try {
-			IloCplex cplex = new IloCplex();
+			updateParameters(this.cplex);
 			
-			initWithParameters(cplex);
+			boolean postSolve = false;
+			Object postsolve = parameters.get(Solver.POSTSOLVE);
+			if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+			
+			Result result = problem.optimize(postSolve);
 
-			for (Object variable : problem.getVariables()) {
-				VarType varType = problem.getVarType(variable);
-				Number lowerBound = problem.getVarLowerBound(variable);
-				Number upperBound = problem.getVarUpperBound(variable);
-
-				double lb = (lowerBound != null ? lowerBound.doubleValue() : Double.NEGATIVE_INFINITY);
-				double ub = (upperBound != null ? upperBound.doubleValue() : Double.POSITIVE_INFINITY);
-
-				final IloNumVarType type;
-				switch (varType) {
-				case BOOL:
-					type = IloNumVarType.Bool;
-					break;
-				case INT:
-					type = IloNumVarType.Int;
-					break;
-				default: // REAL
-					type = IloNumVarType.Float;
-					break;
-				}
-
-				IloNumVar num = cplex.numVar(lb, ub, type);
-
-				numToVar.put(num, variable);
-				varToNum.put(variable, num);
-			}
-
-			for (Constraint constraint : problem.getConstraints()) {
-				IloLinearNumExpr lin = cplex.linearNumExpr();
-				Linear linear = constraint.getLhs();
-				convert(linear, lin, varToNum);
-
-				double rhs = constraint.getRhs().doubleValue();
-
-				switch (constraint.getOperator()) {
-				case LE:
-					cplex.addLe(lin, rhs);
-					break;
-				case GE:
-					cplex.addGe(lin, rhs);
-					break;
-				default: // EQ
-					cplex.addEq(lin, rhs);
-				}
-			}
-
-			if (problem.getObjective() != null) {
-				IloLinearNumExpr lin = cplex.linearNumExpr();
-				Linear objective = problem.getObjective();
-				convert(objective, lin, varToNum);
-
-				if (problem.getOptType() == OptType.MIN) {
-					cplex.addMinimize(lin);
-				} else {
-					cplex.addMaximize(lin);
-				}
-			}
-
-			for (Hook hook : hooks) {
-				hook.call(cplex, varToNum);
-			}
-
-			if (!cplex.solve()) {
-				cplex.end();
-				throw new OptimizationException();
-			}
-
-			final Result result;
-			if (problem.getObjective() != null) {
-				Linear objective = problem.getObjective();
-				result = new ResultImpl(objective);
-			} else {
-				result = new ResultImpl();
-			}
-
-			for (Entry<Object, IloNumVar> entry : varToNum.entrySet()) {
-				Object variable = entry.getKey();
-				IloNumVar num = entry.getValue();
-				VarType varType = problem.getVarType(variable);
-
-				double value = cplex.getValue(num);
-				if (varType.isInt()) {
-					int v = (int) Math.round(value);
-					result.putPrimalValue(variable, v);
-				} else {
-					result.putPrimalValue(variable, value);
-				}
-			}
-
-			cplex.end();
-
+			this.problem = null;
+			this.cplex.end();
+			
 			return result;
-
+			
 		} catch (IloException e) {
 			e.printStackTrace();
-			throw new OptimizationException();
+			throw new OptimizationException("");
 		}
 
 	}
 
-	protected void initWithParameters(IloCplex cplex) throws IloException {
+	protected void updateParameters(IloCplex cplex) throws IloException {
 		Object timeout = parameters.get(Solver.TIMEOUT);
 		Object verbose = parameters.get(Solver.VERBOSE);
 		Object mipgap = parameters.get(Solver.MIPGAP);
@@ -221,16 +117,6 @@ public class SolverCPLEX extends AbstractSolver {
 		System.out.println("parallel mode: "+cplex.getParam(IntParam.ParallelMode));
 		cplex.setParam(IntParam.Threads, 8);
 		System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));*/
-	}
-
-	protected void convert(Linear linear, IloLinearNumExpr lin, Map<Object, IloNumVar> varToNum) throws IloException {
-		for (Term term : linear) {
-			Number coeff = term.getCoefficient();
-			Object variable = term.getVariable();
-
-			IloNumVar num = varToNum.get(variable);
-			lin.addTerm(coeff.doubleValue(), num);
-		}
 	}
 
 }

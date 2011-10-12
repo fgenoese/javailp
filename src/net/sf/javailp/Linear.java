@@ -23,7 +23,7 @@ import java.util.Map;
  * The class {@code Linear} is a linear expression consisting of variables and
  * their coefficients.
  * 
- * @author lukasiewycz
+ * @author lukasiewycz @author fgenoese
  * 
  */
 public class Linear implements Iterable<Term> {
@@ -43,19 +43,19 @@ public class Linear implements Iterable<Term> {
 	 * 
 	 * @param coefficients
 	 *            the coefficients
-	 * @param variables
-	 *            the variables
+	 * @param variableNames
+	 *            the variable names
 	 */
-	public Linear(List<Number> coefficients, List<Object> variables) {
+	public Linear(List<Number> coefficients, List<String> variableNames) {
 		this();
-		if (coefficients.size() != variables.size()) {
+		if (coefficients.size() != variableNames.size()) {
 			throw new IllegalArgumentException(
-					"The size of the varibales and coefficients must be equal.");
+					"The size of the variables and coefficients must be equal.");
 		} else {
-			for (int i = 0; i < variables.size(); i++) {
-				Object variable = variables.get(i);
+			for (int i = 0; i < variableNames.size(); i++) {
+				String variableName = variableNames.get(i);
 				Number coefficient = coefficients.get(i);
-				Term term = new Term(variable, coefficient);
+				Term term = new Term(variableName, coefficient);
 				add(term);
 			}
 		}
@@ -87,16 +87,16 @@ public class Linear implements Iterable<Term> {
 	}
 
 	/**
-	 * Returns the variables.
+	 * Returns the variable names.
 	 * 
-	 * @return the variables
+	 * @return the variable names
 	 */
-	public List<Object> getVariables() {
-		List<Object> variables = new ArrayList<Object>();
+	public List<String> getVariableNames() {
+		List<String> variableNames = new ArrayList<String>();
 		for (Term term : terms) {
-			variables.add(term.getVariable());
+			variableNames.add(term.getVariableName());
 		}
-		return variables;
+		return variableNames;
 	}
 
 	/**
@@ -104,11 +104,11 @@ public class Linear implements Iterable<Term> {
 	 * 
 	 * @param coefficient
 	 *            the coefficient
-	 * @param variable
-	 *            the variable
+	 * @param variableName
+	 *            the variable name
 	 */
-	public void add(Number coefficient, Object variable) {
-		Term term = new Term(variable, coefficient);
+	public void add(Number coefficient, String variableName) {
+		Term term = new Term(variableName, coefficient);
 		add(term);
 	}
 
@@ -151,9 +151,9 @@ public class Linear implements Iterable<Term> {
 		for (int i = 0; i < terms.size(); i++) {
 			Term term = terms.get(i);
 			Number coeff = term.getCoefficient();
-			Object variable = term.getVariable();
+			String variableName = term.getVariableName();
 
-			s.append(coeff).append("*").append(variable);
+			s.append(coeff).append("*").append(variableName);
 			if (i < size() - 1) {
 				if ((i+1) % 100 == 0) {
 					s.append("\n");
@@ -171,7 +171,7 @@ public class Linear implements Iterable<Term> {
 	 *            the result
 	 * @return the value
 	 */
-	public Number evaluate(Map<Object, Number> result) {
+	public Number evaluate(Map<String, Number> result) {
 		return evaluate(result, false);
 	}
 	
@@ -184,15 +184,15 @@ public class Linear implements Iterable<Term> {
 	 * 			  if true, values that are missing in result will be set to 0
 	 * @return the value
 	 */
-	public Number evaluate(Map<Object, Number> result, boolean ignoreMissingValues) {
+	public Number evaluate(Map<String, Number> result, boolean ignoreMissingValues) {
 		double d = 0.0;
 		boolean asDouble = false;
 
 		for (Term term : terms) {
-			Object variable = term.getVariable();
+			String variableName = term.getVariableName();
 
 			Number coeff = term.getCoefficient();
-			Number value = result.get(variable);
+			Number value = result.get(variableName);
 			if (coeff instanceof Double || value instanceof Double) {
 				asDouble = true;
 			}
@@ -201,7 +201,7 @@ public class Linear implements Iterable<Term> {
 				d += coeff.doubleValue() * value.doubleValue();
 			} else {
 				if (!ignoreMissingValues) {
-					throw new IllegalArgumentException("The variable " + variable
+					throw new IllegalArgumentException("The variable " + variableName
 							+ " is missing in the given result.");
 				}
 			}
