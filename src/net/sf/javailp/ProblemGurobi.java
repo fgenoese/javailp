@@ -99,7 +99,7 @@ public class ProblemGurobi extends Problem {
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
 		if (nameToCon.containsKey(name)) {
-			System.err.println("cannot add constraint: a constraint with this name already exists");
+			System.err.println("cannot add constraint '"+name+"': a constraint with this name already exists");
 			return;
 		}
 		try {
@@ -144,7 +144,7 @@ public class ProblemGurobi extends Problem {
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
 		if (nameToVar.containsKey(name)) {
-			System.err.println("cannot add variable: a variable with this name already exists");
+			System.err.println("cannot add variable '"+name+"': a variable with this name already exists");
 			return;
 		}
 		try {
@@ -177,6 +177,10 @@ public class ProblemGurobi extends Problem {
 	 */
 	public void setVariableLowerBound(String name, Number lb) {
 		try {
+			if (hasChanged) {
+				model.update();
+				hasChanged = false;
+			}
 			GRBVar var = nameToVar.get(name);
 			if (var == null) {
 				throw new IllegalArgumentException(
@@ -195,6 +199,10 @@ public class ProblemGurobi extends Problem {
 	 */
 	public void setVariableUpperBound(String name, Number ub) {
 		try {
+			if (hasChanged) {
+				model.update();
+				hasChanged = false;
+			}
 			GRBVar var = nameToVar.get(name);
 			if (var == null) {
 				throw new IllegalArgumentException(
