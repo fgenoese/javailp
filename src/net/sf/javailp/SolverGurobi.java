@@ -17,6 +17,7 @@ package net.sf.javailp;
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
+import gurobi.GRBModel;
 
 /**
  * The {@code SolverGurobi} is the {@code Solver} Gurobi.
@@ -27,6 +28,7 @@ import gurobi.GRBException;
 public class SolverGurobi extends AbstractSolver {
 	
 	private GRBEnv env;
+	private GRBModel model;
 	private Problem problem;
 	
 	/**
@@ -37,7 +39,25 @@ public class SolverGurobi extends AbstractSolver {
 		super();
 		try {
 			this.env = new GRBEnv("gurobi.log");
-			this.problem = new ProblemGurobi(this.env);
+		} catch (GRBException e) {
+			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#createProblem()
+	 */
+	public Problem createProblem() {
+		try {
+			if (this.problem != null) {
+				this.deleteProblem();
+			}
+			updateParameters(this.env);
+			this.model = new GRBModel(this.env);
+			this.problem = new ProblemGurobi(this.env, this.model);
+			return this.problem;
 		} catch (GRBException e) {
 			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
 		}
@@ -50,9 +70,19 @@ public class SolverGurobi extends AbstractSolver {
 	 */
 	public Problem getProblem() {
 		if (this.problem == null) {
-			this.problem = new ProblemGurobi(this.env);
+			return this.createProblem();
 		}
 		return this.problem;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#deleteProblem()
+	 */
+	public void deleteProblem() {
+		this.problem = null;
+		this.model.dispose();
 	}
 
 	/*
@@ -66,22 +96,14 @@ public class SolverGurobi extends AbstractSolver {
 			throw new OptimizationException("GRBEnv must be initialized before any problem can be solved.");
 		}
 
-		try {
-			updateParameters(this.env);
-
-			boolean postSolve = false;
-			Object postsolve = this.parameters.get(Solver.POSTSOLVE);
-			if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
-			
-			Result result = this.problem.optimize(postSolve);
-
-			this.problem = null;
-			
-			return result;
-
-		} catch (GRBException e) {
-			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-		}
+		boolean postSolve = false;
+		Object postsolve = this.parameters.get(Solver.POSTSOLVE);
+		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+		
+		Result result = this.problem.optimize(postSolve);
+		
+		return result;
+		
 
 	}
 

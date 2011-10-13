@@ -35,9 +35,22 @@ public class SolverCPLEX extends AbstractSolver {
 	 */
 	public SolverCPLEX() {
 		super();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#createProblem()
+	 */
+	public Problem createProblem() {
 		try {
+			if (this.problem != null) {
+				this.deleteProblem();
+			}
 			this.cplex = new IloCplex();
+			updateParameters(this.cplex);
 			this.problem = new ProblemCPLEX(this.cplex);
+			return this.problem;
 		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
 		}
@@ -50,14 +63,19 @@ public class SolverCPLEX extends AbstractSolver {
 	 */
 	public Problem getProblem() {
 		if (this.problem == null) {
-			try {
-				this.cplex = new IloCplex();
-				this.problem = new ProblemCPLEX(this.cplex);
-			} catch (IloException e) {
-				throw new OptimizationException(e.getMessage());
-			}
+			return this.createProblem();
 		}
 		return this.problem;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#deleteProblem()
+	 */
+	public void deleteProblem() {
+		this.problem = null;
+		this.cplex.end();
 	}
 
 	/*
@@ -66,25 +84,13 @@ public class SolverCPLEX extends AbstractSolver {
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
-		try {
-			updateParameters(this.cplex);
-			
-			boolean postSolve = false;
-			Object postsolve = parameters.get(Solver.POSTSOLVE);
-			if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
-			
-			Result result = problem.optimize(postSolve);
-
-			this.problem = null;
-			this.cplex.end();
-			
-			return result;
-			
-		} catch (IloException e) {
-			e.printStackTrace();
-			throw new OptimizationException("");
-		}
-
+		boolean postSolve = false;
+		Object postsolve = parameters.get(Solver.POSTSOLVE);
+		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+		
+		Result result = problem.optimize(postSolve);
+		
+		return result;
 	}
 
 	protected void updateParameters(IloCplex cplex) throws IloException {

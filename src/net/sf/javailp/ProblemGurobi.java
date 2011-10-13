@@ -20,12 +20,12 @@ public class ProblemGurobi extends Problem {
 	private Map<String, GRBConstr> nameToCon 	= new HashMap<String, GRBConstr>();
 	private Linear objectiveFunction;
 	
-	protected ProblemGurobi(GRBEnv env) {
-		try {
-			model = new GRBModel(env);
-		} catch (GRBException e) {
-			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
-		}
+	/**
+	 * Constructs a {@code ProblemGurobi}.
+	 * 
+	 */
+	protected ProblemGurobi(GRBEnv env, GRBModel model) {
+		this.model = model;
 	}
 
 	/* (non-Javadoc)
@@ -202,11 +202,10 @@ public class ProblemGurobi extends Problem {
 			    double[] shadowPrices		= fixed.get(GRB.DoubleAttr.Pi, constraints);
 			    String[] constraintNames	= fixed.get(GRB.StringAttr.ConstrName, constraints);
 			    
-			    for (i = 0; i < variables.length; i++) {
+			    for (i = 0; i < constraints.length; i++) {
 			    	result.putDualValue(constraintNames[i], shadowPrices[i]);
 			    }
 			    
-			    model.dispose();
 			    fixed.dispose();
 			    
 			    return result;
@@ -224,9 +223,7 @@ public class ProblemGurobi extends Problem {
 		    		result.putPrimalValue(variableNames[i], primalValues[i]);
 		    	}
 			}
-			
-			model.dispose();
-			
+									
 			return result;
 		} catch (GRBException e) {
 			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());

@@ -6,16 +6,20 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public class ProblemCPLEX extends Problem {
 	private IloCplex cplex;
-	private Map<String, IloNumVar> nameToVar 	= new HashMap<String, IloNumVar>();
+	private Map<String, IloNumVar> nameToVar 	= new LinkedHashMap<String, IloNumVar>();
 	private Linear objectiveFunction;
 	private int numberOfConstraints 			= 0;
 	
+	/**
+	 * Constructs a {@code ProblemCPLEX}.
+	 * 
+	 */
 	protected ProblemCPLEX(IloCplex cplex) {
 		this.cplex = cplex;
 	}
@@ -138,7 +142,6 @@ public class ProblemCPLEX extends Problem {
 	protected Result optimize(boolean postSolve) {
 		try {
 			if (!cplex.solve()) {
-				cplex.end();
 				throw new OptimizationException("No optimal solution found.");
 			}
 	

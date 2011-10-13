@@ -9,5 +9,12 @@ public abstract class Problem implements ProblemInterface {
 	 * @return the solution
 	 */
 	protected abstract Result optimize(boolean postSolve);
+	
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#addVariable(java.lang.String, net.sf.javailp.VarType)
+	 */
+	public void addVariable(String name, VarType type) {
+		addVariable(name, type, null, null);
+	}
 
 }

@@ -58,7 +58,7 @@ public interface ProblemInterface {
 	public int getVariablesCount();
 
 	/**
-	 * Adds or updates a constraint to the map of constraints.
+	 * Adds a constraint to the map of constraints.
 	 * 
 	 * @param name
 	 *            the name of the constraint
@@ -72,7 +72,7 @@ public interface ProblemInterface {
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs);
 
 	/**
-	 * Adds or updates a constraint to the map of constraints.
+	 * Adds a variable to the map of constraints.
 	 * 
 	 * @param name
 	 *            the name of the constraint
@@ -84,5 +84,15 @@ public interface ProblemInterface {
 	 *            the upper bound
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub);
+	
+	/**
+	 * Adds variable to the map of constraints.
+	 * 
+	 * @param name
+	 *            the name of the constraint
+	 * @param type
+	 *            the variable type
+	 */
+	public void addVariable(String name, VarType type);
 		
 }

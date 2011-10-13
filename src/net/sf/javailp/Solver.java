@@ -62,11 +62,23 @@ public interface Solver {
 	public Map<Integer, Number> getParameters();
 	
 	/**
-	 * Returns the opimization problem for this solver.
+	 * Returns a new optimization problem for this solver. If existent, the old one is deleted.
+	 * 
+	 * @return the optimization problem
+	 */
+	public Problem createProblem();
+	
+	/**
+	 * Returns the current opimization problem for this solver. If not existent, a new one is created.
 	 * 
 	 * @return the optimization problem
 	 */
 	public Problem getProblem();
+	
+	/**
+	 * Deletes the opimization problem for this solver.
+	 */
+	public void deleteProblem();
 
 	/**
 	 * Solves the optimization problem. Returns {@code null} if there exists no

@@ -15,6 +15,7 @@
 package net.sf.javailp;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ public class ResultImpl implements Result {
 	 */
 	public ResultImpl(Linear objectiveFunction) {
 		super();
-		this.primalValues = new HashMap<String, Number>();
+		this.primalValues = new LinkedHashMap<String, Number>();
 		this.dualValues = new HashMap<String, Number>();
 		this.objectiveFunction = objectiveFunction;
 	}

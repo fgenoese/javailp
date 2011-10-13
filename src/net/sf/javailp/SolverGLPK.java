@@ -17,6 +17,7 @@ package net.sf.javailp;
 import org.gnu.glpk.GLPK;
 import org.gnu.glpk.GLPKConstants;
 import org.gnu.glpk.glp_iocp;
+import org.gnu.glpk.glp_prob;
 import org.gnu.glpk.glp_smcp;
 
 /**
@@ -27,6 +28,7 @@ import org.gnu.glpk.glp_smcp;
  */
 public class SolverGLPK extends AbstractSolver {
 	
+	private glp_prob lp;
 	private Problem problem;
 	private glp_smcp simplexParameters;
 	private glp_iocp integerParameters;
@@ -37,11 +39,25 @@ public class SolverGLPK extends AbstractSolver {
 	 */
 	public SolverGLPK() {
 		super();
-		simplexParameters = new glp_smcp();
-		integerParameters = new glp_iocp();
-		GLPK.glp_init_smcp(simplexParameters);
-		GLPK.glp_init_iocp(integerParameters);
-		this.problem = new ProblemGLPK(simplexParameters, integerParameters);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#createProblem()
+	 */
+	public Problem createProblem() {
+		if (this.problem != null) {
+			this.deleteProblem();
+		}
+		this.lp = GLPK.glp_create_prob();
+		this.simplexParameters = new glp_smcp();
+		this.integerParameters = new glp_iocp();
+		GLPK.glp_init_smcp(this.simplexParameters);
+		GLPK.glp_init_iocp(this.integerParameters);
+		this.updateParameters();
+		this.problem = new ProblemGLPK(this.lp, this.simplexParameters, this.integerParameters);
+		return this.problem;
 	}
 	
 	/*
@@ -51,9 +67,19 @@ public class SolverGLPK extends AbstractSolver {
 	 */
 	public Problem getProblem() {
 		if (this.problem == null) {
-			this.problem = new ProblemGLPK(simplexParameters, integerParameters);
+			return this.createProblem();
 		}
 		return this.problem;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.Solver#deleteProblem()
+	 */
+	public void deleteProblem() {
+		this.problem = null;
+		GLPK.glp_delete_prob(lp);
 	}
 
 	/*
@@ -69,9 +95,7 @@ public class SolverGLPK extends AbstractSolver {
 		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
 		
 		Result result = this.problem.optimize(postSolve);
-		
-		this.problem = null;
-		
+				
 		return result;
 	}
 	
@@ -101,7 +125,7 @@ public class SolverGLPK extends AbstractSolver {
 			case 2:
 				msgLevel = GLPKConstants.GLP_MSG_ON;
 				break;
-			default: // >= 2
+			default:
 				msgLevel = GLPKConstants.GLP_MSG_ALL;
 			}
 			this.simplexParameters.setMsg_lev(msgLevel);
