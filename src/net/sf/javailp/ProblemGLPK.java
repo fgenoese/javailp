@@ -166,9 +166,15 @@ public class ProblemGLPK extends Problem {
 		if (type == VarType.BOOL) {
 			lowerBound = 0.0;
 			upperBound = 1.0;
-			if (lb != null && lb.doubleValue() > 0.0) lowerBound = 1.0;
-			if (ub != null && ub.doubleValue() < 1.0) upperBound = 0.0;
-			boundType = GLPKConstants.GLP_DB;
+			if (lb != null && lb.doubleValue() > 0.0) {
+				lowerBound = 1.0;
+				boundType = GLPKConstants.GLP_FX;
+			} else if (ub != null && ub.doubleValue() < 1.0) {
+				upperBound = 0.0;
+				boundType = GLPKConstants.GLP_FX;
+			} else {
+				boundType = GLPKConstants.GLP_DB;
+			}
 		} else {
 			if (lb != null) lowerBound = lb.doubleValue(); else lowerBound = 0.0;
 			if (ub != null) upperBound = ub.doubleValue(); else upperBound = 0.0;
