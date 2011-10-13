@@ -102,6 +102,10 @@ public class ProblemGLPK extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#addConstraint(java.lang.String, net.sf.javailp.Linear, net.sf.javailp.Operator, java.lang.Number)
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
+		if (conNameToIndex.containsKey(name)) {
+			System.err.println("cannot add constraint: a constraint with this name already exists");
+			return;
+		}
 		GLPK.glp_add_rows(lp, 1);
 		numberOfConstraints++;
 		conNameToIndex.put(name, numberOfConstraints);
@@ -141,6 +145,10 @@ public class ProblemGLPK extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#addVariable(java.lang.String, net.sf.javailp.VarType, java.lang.Number, java.lang.Number)
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
+		if (varNameToIndex.containsKey(name)) {
+			System.err.println("cannot add variable: a variable with this name already exists");
+			return;
+		}
 		GLPK.glp_add_cols(lp, 1);
 		numberOfVariables++;
 		varNameToIndex.put(name, numberOfVariables);

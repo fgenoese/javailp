@@ -6,15 +6,21 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * @author fgenoese
+ *
+ */
 public class ProblemCPLEX extends Problem {
 	private IloCplex cplex;
 	private Map<String, IloNumVar> nameToVar 	= new LinkedHashMap<String, IloNumVar>();
+	private List<String> conNames				= new ArrayList<String>();
 	private Linear objectiveFunction;
-	private int numberOfConstraints 			= 0;
 	
 	/**
 	 * Constructs a {@code ProblemCPLEX}.
@@ -64,7 +70,7 @@ public class ProblemCPLEX extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#getConstraintsCount()
 	 */
 	public int getConstraintsCount() {
-		return numberOfConstraints;
+		return conNames.size();
 	}
 
 	/* (non-Javadoc)
@@ -78,6 +84,10 @@ public class ProblemCPLEX extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#addConstraint(java.lang.String, net.sf.javailp.Linear, net.sf.javailp.Operator, java.lang.Number)
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
+		if (conNames.contains(name)) {
+			System.err.println("cannot add constraint: a constraint with this name already exists");
+			return;
+		}
 		try {
 			IloLinearNumExpr expr = cplex.linearNumExpr();
 			for (Term term : lhs.terms) {
@@ -100,18 +110,21 @@ public class ProblemCPLEX extends Problem {
 			default:
 				cplex.addEq(expr, rhs.doubleValue());
 			}
-			numberOfConstraints++;
+			conNames.add(name);
 		} catch (IloException e) {
 			e.printStackTrace();
 			throw new OptimizationException(e.getMessage());
 		} 
-
 	}
 
 	/* (non-Javadoc)
 	 * @see net.sf.javailp.ProblemInterface#addVariable(java.lang.String, net.sf.javailp.VarType, java.lang.Number, java.lang.Number)
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
+		if (nameToVar.containsKey(name)) {
+			System.err.println("cannot add variable: a variable with this name already exists");
+			return;
+		}
 		try {
 			double lowerBound = (lb != null ? lb.doubleValue() : Double.NEGATIVE_INFINITY);
 			double upperBound = (ub != null ? ub.doubleValue() : Double.POSITIVE_INFINITY);

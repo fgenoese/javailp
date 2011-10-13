@@ -12,6 +12,10 @@ import gurobi.GRBModel;
 import gurobi.GRBVar;
 import gurobi.GRB.DoubleAttr;
 
+/**
+ * @author fgenoese
+ *
+ */
 public class ProblemGurobi extends Problem {
 	
 	private GRBModel model;
@@ -94,6 +98,10 @@ public class ProblemGurobi extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#addConstraint(java.lang.String, net.sf.javailp.Linear, net.sf.javailp.Operator, java.lang.Number)
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
+		if (nameToCon.containsKey(name)) {
+			System.err.println("cannot add constraint: a constraint with this name already exists");
+			return;
+		}
 		try {
 			if (hasChanged) {
 				model.update();
@@ -124,7 +132,6 @@ public class ProblemGurobi extends Problem {
 				break;
 			}
 
-
 			nameToCon.put(name, model.addConstr(expr, op, rhs.doubleValue(), name));
 		} catch (GRBException e) {
 			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
@@ -136,6 +143,10 @@ public class ProblemGurobi extends Problem {
 	 * @see net.sf.javailp.ProblemInterface#addVariable(java.lang.String, net.sf.javailp.VarType, java.lang.Number, java.lang.Number)
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
+		if (nameToVar.containsKey(name)) {
+			System.err.println("cannot add variable: a variable with this name already exists");
+			return;
+		}
 		try {
 			hasChanged = true;
 			
