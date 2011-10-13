@@ -86,13 +86,33 @@ public interface ProblemInterface {
 	public void addVariable(String name, VarType type, Number lb, Number ub);
 	
 	/**
-	 * Adds variable to the map of constraints.
+	 * Adds variable to the map of variables.
 	 * 
 	 * @param name
-	 *            the name of the constraint
+	 *            the name of the variable
 	 * @param type
 	 *            the variable type
 	 */
 	public void addVariable(String name, VarType type);
+	
+	/**
+	 * Sets the lower bound of a variable.
+	 * 
+	 * @param name
+	 *            the name of the variable
+	 * @param lb
+	 *            the lower bound
+	 */
+	public void setVariableLowerBound(String name, Number lb);
+	
+	/**
+	 * Sets the upper bound of a variable.
+	 * 
+	 * @param name
+	 *            the name of the variable
+	 * @param ub
+	 *            the upper bound
+	 */
+	public void setVariableUpperBound(String name, Number ub);
 		
 }

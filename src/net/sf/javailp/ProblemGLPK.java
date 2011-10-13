@@ -103,7 +103,7 @@ public class ProblemGLPK extends Problem {
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
 		if (conNameToIndex.containsKey(name)) {
-			System.err.println("cannot add constraint: a constraint with this name already exists");
+			System.err.println("cannot add constraint '"+name+"': a constraint with this name already exists");
 			return;
 		}
 		GLPK.glp_add_rows(lp, 1);
@@ -146,7 +146,7 @@ public class ProblemGLPK extends Problem {
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
 		if (varNameToIndex.containsKey(name)) {
-			System.err.println("cannot add variable: a variable with this name already exists");
+			System.err.println("cannot add variable '"+name+"': a variable with this name already exists");
 			return;
 		}
 		GLPK.glp_add_cols(lp, 1);
@@ -202,6 +202,72 @@ public class ProblemGLPK extends Problem {
 		GLPK.glp_set_col_bnds(lp, numberOfVariables, boundType, lowerBound, upperBound);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableLowerBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableLowerBound(String name, Number lb) {
+		Integer variableIndex = varNameToIndex.get(name);
+		if (variableIndex == null) {
+			throw new IllegalArgumentException(
+					"Variables must be added to the problem before a bound can be set. " +
+					"(missing: "+name+")");
+		}
+		double lowerBound;
+		double upperBound = GLPK.glp_get_col_ub(lp, variableIndex);
+		
+		int boundType = GLPK.glp_get_col_type(lp, variableIndex);
+		if (lb != null) {
+			if (boundType == GLPKConstants.GLP_UP) {
+				boundType = GLPKConstants.GLP_FX;
+			} else if (boundType == GLPKConstants.GLP_FR) {
+				boundType = GLPKConstants.GLP_LO;
+			}
+			lowerBound = lb.doubleValue();
+		} else {
+			if (boundType == GLPKConstants.GLP_FX) {
+				boundType = GLPKConstants.GLP_UP;
+			} else if (boundType == GLPKConstants.GLP_LO) {
+				boundType = GLPKConstants.GLP_FR;
+			}
+			lowerBound = 0.0;
+		}
+		
+		GLPK.glp_set_col_bnds(lp, variableIndex, boundType, lowerBound, upperBound);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableUpperBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableUpperBound(String name, Number ub) {
+		Integer variableIndex = varNameToIndex.get(name);
+		if (variableIndex == null) {
+			throw new IllegalArgumentException(
+					"Variables must be added to the problem before a bound can be set. " +
+					"(missing: "+name+")");
+		}
+		double lowerBound = GLPK.glp_get_col_lb(lp, variableIndex);
+		double upperBound;
+		
+		int boundType = GLPK.glp_get_col_type(lp, variableIndex);
+		if (ub != null) {
+			if (boundType == GLPKConstants.GLP_LO) {
+				boundType = GLPKConstants.GLP_FX;
+			} else if (boundType == GLPKConstants.GLP_FR) {
+				boundType = GLPKConstants.GLP_UP;
+			}
+			upperBound = ub.doubleValue();
+		} else {
+			if (boundType == GLPKConstants.GLP_FX) {
+				boundType = GLPKConstants.GLP_LO;
+			} else if (boundType == GLPKConstants.GLP_UP) {
+				boundType = GLPKConstants.GLP_FR;
+			}
+			upperBound = 0.0;
+		}
+		
+		GLPK.glp_set_col_bnds(lp, variableIndex, boundType, lowerBound, upperBound);
+	}
+	
 	/* (non-Javadoc)
 	 * @see net.sf.javailp.AbstractProblem#optimize(boolean)
 	 */

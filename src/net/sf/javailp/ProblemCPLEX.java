@@ -52,7 +52,6 @@ public class ProblemCPLEX extends Problem {
 				cplex.addMaximize(expr);
 			}
 		} catch (IloException e) {
-			e.printStackTrace();
 			throw new OptimizationException(e.getMessage());
 		} 
 
@@ -85,7 +84,7 @@ public class ProblemCPLEX extends Problem {
 	 */
 	public void addConstraint(String name, Linear lhs, Operator operator, Number rhs) {
 		if (conNames.contains(name)) {
-			System.err.println("cannot add constraint: a constraint with this name already exists");
+			System.err.println("cannot add constraint '"+name+"': a constraint with this name already exists");
 			return;
 		}
 		try {
@@ -112,7 +111,6 @@ public class ProblemCPLEX extends Problem {
 			}
 			conNames.add(name);
 		} catch (IloException e) {
-			e.printStackTrace();
 			throw new OptimizationException(e.getMessage());
 		} 
 	}
@@ -122,7 +120,7 @@ public class ProblemCPLEX extends Problem {
 	 */
 	public void addVariable(String name, VarType type, Number lb, Number ub) {
 		if (nameToVar.containsKey(name)) {
-			System.err.println("cannot add variable: a variable with this name already exists");
+			System.err.println("cannot add variable '"+name+"': a variable with this name already exists");
 			return;
 		}
 		try {
@@ -144,7 +142,42 @@ public class ProblemCPLEX extends Problem {
 	
 			nameToVar.put(name, cplex.numVar(lowerBound, upperBound, varType));
 		} catch (IloException e) {
-			e.printStackTrace();
+			throw new OptimizationException(e.getMessage());
+		} 
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableLowerBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableLowerBound(String name, Number lb) {
+		try {
+			IloNumVar var = nameToVar.get(name);
+			if (var == null) {
+				throw new IllegalArgumentException(
+				"Variables must be added to the problem before a bound can be set. " +
+				"(missing: "+name+")");
+			}
+			double lowerBound = (lb != null ? lb.doubleValue() : Double.NEGATIVE_INFINITY);
+			var.setLB(lowerBound);
+		} catch (IloException e) {
+			throw new OptimizationException(e.getMessage());
+		} 
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableUpperBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableUpperBound(String name, Number ub) {
+		try {
+			IloNumVar var = nameToVar.get(name);
+			if (var == null) {
+				throw new IllegalArgumentException(
+				"Variables must be added to the problem before a bound can be set. " +
+				"(missing: "+name+")");
+			}
+			double upperBound = (ub != null ? ub.doubleValue() : Double.POSITIVE_INFINITY);
+			var.setUB(upperBound);
+		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
 		} 
 	}
@@ -179,7 +212,6 @@ public class ProblemCPLEX extends Problem {
 	
 			return result;
 		} catch (IloException e) {
-			e.printStackTrace();
 			throw new OptimizationException(e.getMessage());
 		} 
 	}

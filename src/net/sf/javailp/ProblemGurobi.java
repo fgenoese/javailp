@@ -171,6 +171,42 @@ public class ProblemGurobi extends Problem {
 			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableLowerBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableLowerBound(String name, Number lb) {
+		try {
+			GRBVar var = nameToVar.get(name);
+			if (var == null) {
+				throw new IllegalArgumentException(
+				"Variables must be added to the problem before a bound can be set. " +
+				"(missing: "+name+")");
+			}
+			double lowerBound = (lb != null ? lb.doubleValue() : Double.NEGATIVE_INFINITY);
+			var.set(GRB.DoubleAttr.LB, lowerBound);
+		} catch (GRBException e) {
+			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.ProblemInterface#setVariableUpperBound(java.lang.String, java.lang.Number)
+	 */
+	public void setVariableUpperBound(String name, Number ub) {
+		try {
+			GRBVar var = nameToVar.get(name);
+			if (var == null) {
+				throw new IllegalArgumentException(
+				"Variables must be added to the problem before a bound can be set. " +
+				"(missing: "+name+")");
+			}
+			double upperBound = (ub != null ? ub.doubleValue() : Double.POSITIVE_INFINITY);
+			var.set(GRB.DoubleAttr.UB, upperBound);
+		} catch (GRBException e) {
+			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see net.sf.javailp.AbstractProblem#optimize(boolean)
