@@ -54,7 +54,7 @@ public class SolverGurobi extends AbstractSolver {
 			if (this.problem != null) {
 				this.deleteProblem();
 			}
-			updateParameters(this.env);
+			updateParameters();
 			this.model = new GRBModel(this.env);
 			this.problem = new ProblemGurobi(this.env, this.model);
 			return this.problem;
@@ -97,50 +97,50 @@ public class SolverGurobi extends AbstractSolver {
 		}
 
 		boolean postSolve = false;
-		Object postsolve = this.parameters.get(Solver.POSTSOLVE);
-		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
+		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
 		Result result = this.problem.optimize(postSolve);
 		
 		return result;
-		
-
 	}
 
-	protected void updateParameters(GRBEnv env) throws GRBException {
-		Object verbose = this.parameters.get(Solver.VERBOSE);
-		Object timeout = this.parameters.get(Solver.TIMEOUT);
-		Object mipgap = this.parameters.get(Solver.MIPGAP);
+	protected void updateParameters() throws GRBException {
+		Number timeout = this.parameters.get(Solver.TIMEOUT);
+		Number verbose = this.parameters.get(Solver.VERBOSE);
+		Number mipgap = this.parameters.get(Solver.MIPGAP);
+		Number method = this.parameters.get(Solver.METHOD);
 
-		if (verbose != null && verbose instanceof Number) {
-			Number number = (Number) verbose;
-			final int value = number.intValue();
+		if (timeout != null) {
+			double value = timeout.doubleValue();
+			this.env.set(GRB.DoubleParam.TimeLimit, value);
+		}
+		
+		if (verbose != null) {
+			int value = verbose.intValue();
 			final int msgLevel;
 			switch (value) {
 			case 0:
 				msgLevel = 0;
 				break;
-			default: // > 0
+			default:
 				msgLevel = 1;
 			}
-			env.set(GRB.IntParam.OutputFlag, msgLevel);
+			this.env.set(GRB.IntParam.OutputFlag, msgLevel);
 		}
 
-		if (timeout != null && timeout instanceof Number) {
-			Number number = (Number) timeout;
-			double value = number.doubleValue();
-			env.set(GRB.DoubleParam.TimeLimit, value);
-		}
-		
-		if (mipgap != null && mipgap instanceof Number) {
-			Number number = (Number) mipgap;
-			double value = number.doubleValue();
-			env.set(GRB.DoubleParam.MIPGap, value);
+		if (mipgap != null) {
+			double value = mipgap.doubleValue();
+			this.env.set(GRB.DoubleParam.MIPGap, value);
 		}
 		
 		// -1=automatic, 0=primal simplex, 1=dual simplex, 2=barrier, 3=concurrent, 4=deterministic concurrent
-		// standard MIP: dual simplex
+		// standard for MIP root node relaxtion: dual simplex
 		//env.set(GRB.IntParam.Method, 2);
+		if (method != null) {
+			int value = method.intValue();
+			this.env.set(GRB.IntParam.Method, value);
+		}
 	}
 
 }

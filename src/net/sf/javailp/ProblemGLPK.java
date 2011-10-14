@@ -22,7 +22,7 @@ import org.gnu.glpk.glp_smcp;
  */
 public class ProblemGLPK extends Problem {
 	
-	private glp_prob lp;
+	private glp_prob model;
 	private glp_smcp simplexParameters;
 	private glp_iocp integerParameters;
 	private Map<String, Integer> varNameToIndex = new LinkedHashMap<String, Integer>();
@@ -36,9 +36,9 @@ public class ProblemGLPK extends Problem {
 	 * Constructs a {@code ProblemGLPK}.
 	 * 
 	 */
-	protected ProblemGLPK(glp_prob lp, glp_smcp simplexParameters, glp_iocp integerParameters) {
-		this.lp = lp;
-		GLPK.glp_set_prob_name(lp, "GLPK");
+	protected ProblemGLPK(glp_prob model, glp_smcp simplexParameters, glp_iocp integerParameters) {
+		this.model = model;
+		GLPK.glp_set_prob_name(model, "GLPK");
 		this.simplexParameters = simplexParameters;
 		this.integerParameters = integerParameters;
 	}
@@ -48,12 +48,12 @@ public class ProblemGLPK extends Problem {
 	 */
 	public void setObjective(Linear objective, OptType optType) {
 		if (optType == OptType.MAX) {
-			GLPK.glp_set_obj_dir(lp, GLPKConstants.GLP_MAX);
+			GLPK.glp_set_obj_dir(model, GLPKConstants.GLP_MAX);
 		} else {
-			GLPK.glp_set_obj_dir(lp, GLPKConstants.GLP_MIN);
+			GLPK.glp_set_obj_dir(model, GLPKConstants.GLP_MIN);
 		}
 
-		GLPK.glp_set_obj_coef(lp, 0, 0);
+		GLPK.glp_set_obj_coef(model, 0, 0);
 
 		final Map<String, Double> obj = new HashMap<String, Double>();
 		for (Term term : objective) {
@@ -68,9 +68,9 @@ public class ProblemGLPK extends Problem {
 			
 			if (obj.containsKey(variableName)) {
 				double coeff = obj.get(variableName);
-				GLPK.glp_set_obj_coef(lp, variableIndex, coeff);
+				GLPK.glp_set_obj_coef(model, variableIndex, coeff);
 			} else {
-				GLPK.glp_set_obj_coef(lp, variableIndex, 0);
+				GLPK.glp_set_obj_coef(model, variableIndex, 0);
 			}
 		}
 		
@@ -106,7 +106,7 @@ public class ProblemGLPK extends Problem {
 			System.err.println("cannot add constraint '"+name+"': a constraint with this name already exists");
 			return;
 		}
-		GLPK.glp_add_rows(lp, 1);
+		GLPK.glp_add_rows(model, 1);
 		numberOfConstraints++;
 		conNameToIndex.put(name, numberOfConstraints);
 		
@@ -136,9 +136,9 @@ public class ProblemGLPK extends Problem {
 			op = GLPKConstants.GLP_FX;
 		}
 
-		GLPK.glp_set_row_name(lp, numberOfConstraints, name);
-		GLPK.glp_set_mat_row(lp, numberOfConstraints, size, variableIndices, coefficients);
-		GLPK.glp_set_row_bnds(lp, numberOfConstraints, op, rhs.doubleValue(), rhs.doubleValue());
+		GLPK.glp_set_row_name(model, numberOfConstraints, name);
+		GLPK.glp_set_mat_row(model, numberOfConstraints, size, variableIndices, coefficients);
+		GLPK.glp_set_row_bnds(model, numberOfConstraints, op, rhs.doubleValue(), rhs.doubleValue());
 	}
 
 	/* (non-Javadoc)
@@ -149,7 +149,7 @@ public class ProblemGLPK extends Problem {
 			System.err.println("cannot add variable '"+name+"': a variable with this name already exists");
 			return;
 		}
-		GLPK.glp_add_cols(lp, 1);
+		GLPK.glp_add_cols(model, 1);
 		numberOfVariables++;
 		varNameToIndex.put(name, numberOfVariables);
 		
@@ -197,9 +197,9 @@ public class ProblemGLPK extends Problem {
 			}
 		}
 
-		GLPK.glp_set_col_name(lp, numberOfVariables, name);
-		GLPK.glp_set_col_kind(lp, numberOfVariables, varType);
-		GLPK.glp_set_col_bnds(lp, numberOfVariables, boundType, lowerBound, upperBound);
+		GLPK.glp_set_col_name(model, numberOfVariables, name);
+		GLPK.glp_set_col_kind(model, numberOfVariables, varType);
+		GLPK.glp_set_col_bnds(model, numberOfVariables, boundType, lowerBound, upperBound);
 	}
 
 	/* (non-Javadoc)
@@ -213,9 +213,9 @@ public class ProblemGLPK extends Problem {
 					"(missing: "+name+")");
 		}
 		double lowerBound;
-		double upperBound = GLPK.glp_get_col_ub(lp, variableIndex);
+		double upperBound = GLPK.glp_get_col_ub(model, variableIndex);
 		
-		int boundType = GLPK.glp_get_col_type(lp, variableIndex);
+		int boundType = GLPK.glp_get_col_type(model, variableIndex);
 		if (lb != null) {
 			if (boundType == GLPKConstants.GLP_UP) {
 				boundType = GLPKConstants.GLP_FX;
@@ -232,7 +232,7 @@ public class ProblemGLPK extends Problem {
 			lowerBound = 0.0;
 		}
 		
-		GLPK.glp_set_col_bnds(lp, variableIndex, boundType, lowerBound, upperBound);
+		GLPK.glp_set_col_bnds(model, variableIndex, boundType, lowerBound, upperBound);
 	}
 
 	/* (non-Javadoc)
@@ -245,10 +245,10 @@ public class ProblemGLPK extends Problem {
 					"Variables must be added to the problem before a bound can be set. " +
 					"(missing: "+name+")");
 		}
-		double lowerBound = GLPK.glp_get_col_lb(lp, variableIndex);
+		double lowerBound = GLPK.glp_get_col_lb(model, variableIndex);
 		double upperBound;
 		
-		int boundType = GLPK.glp_get_col_type(lp, variableIndex);
+		int boundType = GLPK.glp_get_col_type(model, variableIndex);
 		if (ub != null) {
 			if (boundType == GLPKConstants.GLP_LO) {
 				boundType = GLPKConstants.GLP_FX;
@@ -265,7 +265,7 @@ public class ProblemGLPK extends Problem {
 			upperBound = 0.0;
 		}
 		
-		GLPK.glp_set_col_bnds(lp, variableIndex, boundType, lowerBound, upperBound);
+		GLPK.glp_set_col_bnds(model, variableIndex, boundType, lowerBound, upperBound);
 	}
 	
 	/* (non-Javadoc)
@@ -276,8 +276,8 @@ public class ProblemGLPK extends Problem {
 		Result result = new ResultImpl(this.objectiveFunction);
 		
 		if (numberOfIntegerVariables == 0) {
-			GLPK.glp_simplex(lp, simplexParameters);
-			status = GLPK.glp_get_status(lp);
+			GLPK.glp_simplex(model, simplexParameters);
+			status = GLPK.glp_get_status(model);
 			if (status != GLPKConstants.GLP_OPT && status != GLPKConstants.GLP_FEAS) {
 				throw new OptimizationException("No optimal or feasible solution found.");
 			}
@@ -286,10 +286,10 @@ public class ProblemGLPK extends Problem {
 				String variableName = entry.getKey();
 				int variableIndex = entry.getValue();
 				
-				double primalValue = GLPK.glp_get_col_prim(lp, variableIndex);
-				double dualValue = GLPK.glp_get_col_dual(lp, variableIndex);
+				double primalValue = GLPK.glp_get_col_prim(model, variableIndex);
+				double dualValue = GLPK.glp_get_col_dual(model, variableIndex);
 
-				if (GLPK.glp_get_col_kind(lp, variableIndex) == GLPKConstants.GLP_IV) {
+				if (GLPK.glp_get_col_kind(model, variableIndex) == GLPKConstants.GLP_IV) {
 					int v = (int) Math.round(primalValue);
 					result.putPrimalValue(variableName, v);
 				} else {
@@ -302,8 +302,8 @@ public class ProblemGLPK extends Problem {
 				String constraintName = entry.getKey();
 				int constraintIndex = entry.getValue();
 				
-				double primalValue = GLPK.glp_get_row_prim(lp, constraintIndex);
-				double dualValue = GLPK.glp_get_row_dual(lp, constraintIndex);
+				double primalValue = GLPK.glp_get_row_prim(model, constraintIndex);
+				double dualValue = GLPK.glp_get_row_dual(model, constraintIndex);
 				
 				result.putPrimalValue(constraintName, primalValue);
 				result.putDualValue(constraintName, dualValue);
@@ -313,20 +313,20 @@ public class ProblemGLPK extends Problem {
 		}
 		
 		integerParameters.setPresolve(GLPKConstants.GLP_ON);
-		GLPK.glp_intopt(lp, integerParameters);
-		status = GLPK.glp_mip_status(lp);
+		GLPK.glp_intopt(model, integerParameters);
+		status = GLPK.glp_mip_status(model);
 		if (status == GLPKConstants.GLP_OPT || status == GLPKConstants.GLP_FEAS) {
 			// post-solve: LP relaxation with fixed integers
 			if (postSolve) {
 				for (int i = 1; i <= numberOfVariables; i++) {
-					int kind = GLPK.glp_get_col_kind(lp, i);
+					int kind = GLPK.glp_get_col_kind(model, i);
 					if (kind == GLPKConstants.GLP_IV || kind == GLPKConstants.GLP_BV) {
-						double x = GLPK.glp_mip_col_val(lp, i);
-						GLPK.glp_set_col_bnds(lp, i, GLPKConstants.GLP_FX, x, x);
+						double x = GLPK.glp_mip_col_val(model, i);
+						GLPK.glp_set_col_bnds(model, i, GLPKConstants.GLP_FX, x, x);
 					}
 				}
-				GLPK.glp_simplex(lp, simplexParameters);
-				status = GLPK.glp_get_status(lp);
+				GLPK.glp_simplex(model, simplexParameters);
+				status = GLPK.glp_get_status(model);
 				
 				if (status != GLPKConstants.GLP_OPT && status != GLPKConstants.GLP_FEAS) {
 					throw new OptimizationException("No optimal or feasible solution found.");
@@ -336,10 +336,10 @@ public class ProblemGLPK extends Problem {
 					String variableName = entry.getKey();
 					int variableIndex = entry.getValue();
 					
-					double primalValue = GLPK.glp_mip_col_val(lp, variableIndex);
-					double dualValue = GLPK.glp_get_col_dual(lp, variableIndex);
+					double primalValue = GLPK.glp_mip_col_val(model, variableIndex);
+					double dualValue = GLPK.glp_get_col_dual(model, variableIndex);
 
-					if (GLPK.glp_get_col_kind(lp, variableIndex) == GLPKConstants.GLP_IV) {
+					if (GLPK.glp_get_col_kind(model, variableIndex) == GLPKConstants.GLP_IV) {
 						int v = (int) Math.round(primalValue);
 						result.putPrimalValue(variableName, v);
 					} else {
@@ -352,8 +352,8 @@ public class ProblemGLPK extends Problem {
 					String constraintName = entry.getKey();
 					int constraintIndex = entry.getValue();
 					
-					double primalValue = GLPK.glp_mip_row_val(lp, constraintIndex);
-					double dualValue = GLPK.glp_get_row_dual(lp, constraintIndex);
+					double primalValue = GLPK.glp_mip_row_val(model, constraintIndex);
+					double dualValue = GLPK.glp_get_row_dual(model, constraintIndex);
 					
 					result.putPrimalValue(constraintName, primalValue);
 					result.putDualValue(constraintName, dualValue);
@@ -369,9 +369,9 @@ public class ProblemGLPK extends Problem {
 			String variableName = entry.getKey();
 			int variableIndex = entry.getValue();
 			
-			double primalValue = GLPK.glp_mip_col_val(lp, variableIndex);
+			double primalValue = GLPK.glp_mip_col_val(model, variableIndex);
 			
-			if (GLPK.glp_get_col_kind(lp, variableIndex) == GLPKConstants.GLP_IV || GLPK.glp_get_col_kind(lp, variableIndex) == GLPKConstants.GLP_BV) {
+			if (GLPK.glp_get_col_kind(model, variableIndex) == GLPKConstants.GLP_IV || GLPK.glp_get_col_kind(model, variableIndex) == GLPKConstants.GLP_BV) {
 				int v = (int) Math.round(primalValue);
 				result.putPrimalValue(variableName, v);
 			} else {
@@ -383,7 +383,7 @@ public class ProblemGLPK extends Problem {
 			String constraintName = entry.getKey();
 			int constraintIndex = entry.getValue();
 			
-			double primalValue = GLPK.glp_mip_row_val(lp, constraintIndex);
+			double primalValue = GLPK.glp_mip_row_val(model, constraintIndex);
 			
 			result.putPrimalValue(constraintName, primalValue);
 		}

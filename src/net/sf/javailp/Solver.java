@@ -43,6 +43,11 @@ public interface Solver {
 	 * Identifier for the post-solve value.
 	 */
 	public static final int MIPGAP = 3;
+	
+	/**
+	 * Identifier for the method value.
+	 */
+	public static final int METHOD = 4;
 
 	/**
 	 * Sets a parameter.

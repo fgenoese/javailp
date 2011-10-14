@@ -28,7 +28,7 @@ import org.gnu.glpk.glp_smcp;
  */
 public class SolverGLPK extends AbstractSolver {
 	
-	private glp_prob lp;
+	private glp_prob model;
 	private Problem problem;
 	private glp_smcp simplexParameters;
 	private glp_iocp integerParameters;
@@ -50,13 +50,13 @@ public class SolverGLPK extends AbstractSolver {
 		if (this.problem != null) {
 			this.deleteProblem();
 		}
-		this.lp = GLPK.glp_create_prob();
+		this.model = GLPK.glp_create_prob();
 		this.simplexParameters = new glp_smcp();
 		this.integerParameters = new glp_iocp();
 		GLPK.glp_init_smcp(this.simplexParameters);
 		GLPK.glp_init_iocp(this.integerParameters);
 		this.updateParameters();
-		this.problem = new ProblemGLPK(this.lp, this.simplexParameters, this.integerParameters);
+		this.problem = new ProblemGLPK(this.model, this.simplexParameters, this.integerParameters);
 		return this.problem;
 	}
 	
@@ -79,7 +79,7 @@ public class SolverGLPK extends AbstractSolver {
 	 */
 	public void deleteProblem() {
 		this.problem = null;
-		GLPK.glp_delete_prob(lp);
+		GLPK.glp_delete_prob(model);
 	}
 
 	/*
@@ -88,11 +88,9 @@ public class SolverGLPK extends AbstractSolver {
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
-		updateParameters();
-		
 		boolean postSolve = false;
-		Object postsolve = this.parameters.get(Solver.POSTSOLVE);
-		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
+		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
 		Result result = this.problem.optimize(postSolve);
 				
@@ -100,19 +98,18 @@ public class SolverGLPK extends AbstractSolver {
 	}
 	
 	protected void updateParameters() {
-		Object timeout = this.parameters.get(Solver.TIMEOUT);
-		Object verbose = this.parameters.get(Solver.VERBOSE);
-		Object mipgap = this.parameters.get(Solver.MIPGAP);
+		Number timeout = this.parameters.get(Solver.TIMEOUT);
+		Number verbose = this.parameters.get(Solver.VERBOSE);
+		Number mipgap = this.parameters.get(Solver.MIPGAP);
 
 		if (timeout != null) {
-			int v = ((Number) timeout).intValue() * 1000;
-			this.integerParameters.setTm_lim(v);
-			this.simplexParameters.setTm_lim(v);
+			int value = timeout.intValue() * 1000;
+			this.integerParameters.setTm_lim(value);
+			this.simplexParameters.setTm_lim(value);
 		}
 
-		if (verbose != null && verbose instanceof Number) {
-			Number number = (Number) verbose;
-			int value = number.intValue();
+		if (verbose != null) {
+			int value = verbose.intValue();
 			final int msgLevel;
 
 			switch (value) {
@@ -132,9 +129,8 @@ public class SolverGLPK extends AbstractSolver {
 			this.integerParameters.setMsg_lev(msgLevel);
 		}
 		
-		if (mipgap != null && mipgap instanceof Number) {
-			Number number = (Number) mipgap;
-			double value = number.doubleValue();
+		if (mipgap != null) {
+			double value = mipgap.doubleValue();
 			this.integerParameters.setMip_gap(value);
 		}
 	}

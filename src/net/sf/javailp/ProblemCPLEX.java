@@ -1,7 +1,7 @@
 package net.sf.javailp;
 
 import ilog.concert.IloException;
-import ilog.concert.IloLinearNumExpr;
+import ilog.concert.IloNumExpr;
 import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
@@ -17,7 +17,7 @@ import java.util.Map.Entry;
  *
  */
 public class ProblemCPLEX extends Problem {
-	private IloCplex cplex;
+	private IloCplex model;
 	private Map<String, IloNumVar> nameToVar 	= new LinkedHashMap<String, IloNumVar>();
 	private List<String> conNames				= new ArrayList<String>();
 	private Linear objectiveFunction;
@@ -26,8 +26,8 @@ public class ProblemCPLEX extends Problem {
 	 * Constructs a {@code ProblemCPLEX}.
 	 * 
 	 */
-	protected ProblemCPLEX(IloCplex cplex) {
-		this.cplex = cplex;
+	protected ProblemCPLEX(IloCplex model) {
+		this.model = model;
 	}
 
 	/* (non-Javadoc)
@@ -35,7 +35,8 @@ public class ProblemCPLEX extends Problem {
 	 */
 	public void setObjective(Linear objective, OptType optType) {
 		try {
-			IloLinearNumExpr expr = cplex.linearNumExpr();
+			List<IloNumExpr> expressions = new ArrayList<IloNumExpr>();
+			IloNumExpr expr = model.linearNumExpr();
 			for (Term term : objective.terms) {
 				IloNumVar var = nameToVar.get(term.getVariableName());
 				if (var == null) {
@@ -43,13 +44,14 @@ public class ProblemCPLEX extends Problem {
 					"Variables in a linear expression must be added to the problem first. " +
 					"(missing: "+term.getVariableName()+")");
 				}
-				expr.addTerm(term.getCoefficient().doubleValue(), var);
+				expressions.add(model.prod(term.getCoefficient().doubleValue(), var));
 			}
+			expr = model.sum(expressions.toArray(new IloNumExpr[0]));
 	
 			if (optType == OptType.MIN) {
-				cplex.addMinimize(expr);
+				model.addMinimize(expr);
 			} else {
-				cplex.addMaximize(expr);
+				model.addMaximize(expr);
 			}
 		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
@@ -88,7 +90,8 @@ public class ProblemCPLEX extends Problem {
 			return;
 		}
 		try {
-			IloLinearNumExpr expr = cplex.linearNumExpr();
+			List<IloNumExpr> expressions = new ArrayList<IloNumExpr>();
+			IloNumExpr expr = model.linearNumExpr();
 			for (Term term : lhs.terms) {
 				IloNumVar var = nameToVar.get(term.getVariableName());
 				if (var == null) {
@@ -96,18 +99,19 @@ public class ProblemCPLEX extends Problem {
 					"Variables in a linear expression must be added to the problem first. " +
 					"(missing: "+term.getVariableName()+")");
 				}
-				expr.addTerm(term.getCoefficient().doubleValue(), var);
+				expressions.add(model.prod(term.getCoefficient().doubleValue(), var));
 			}
+			expr = model.sum(expressions.toArray(new IloNumExpr[0]));
 
 			switch (operator) {
 			case LE:
-				cplex.addLe(expr, rhs.doubleValue());
+				model.addLe(expr, rhs.doubleValue());
 				break;
 			case GE:
-				cplex.addGe(expr, rhs.doubleValue());
+				model.addGe(expr, rhs.doubleValue());
 				break;
 			default:
-				cplex.addEq(expr, rhs.doubleValue());
+				model.addEq(expr, rhs.doubleValue());
 			}
 			conNames.add(name);
 		} catch (IloException e) {
@@ -137,10 +141,9 @@ public class ProblemCPLEX extends Problem {
 				break;
 			default:
 				varType = IloNumVarType.Float;
-				break;
 			}
 	
-			nameToVar.put(name, cplex.numVar(lowerBound, upperBound, varType));
+			nameToVar.put(name, model.numVar(lowerBound, upperBound, varType));
 		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
 		} 
@@ -187,7 +190,7 @@ public class ProblemCPLEX extends Problem {
 	 */
 	protected Result optimize(boolean postSolve) {
 		try {
-			if (!cplex.solve()) {
+			if (!model.solve()) {
 				throw new OptimizationException("No optimal solution found.");
 			}
 	
@@ -201,7 +204,7 @@ public class ProblemCPLEX extends Problem {
 				String variableName = entry.getKey();
 				IloNumVar var = entry.getValue();
 	
-				double value = cplex.getValue(var);
+				double value = model.getValue(var);
 				if (var.getType() != IloNumVarType.Float) {
 					int v = (int) Math.round(value);
 					result.putPrimalValue(variableName, v);

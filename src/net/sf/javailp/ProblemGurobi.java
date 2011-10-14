@@ -129,7 +129,6 @@ public class ProblemGurobi extends Problem {
 				break;
 			default:
 				op = GRB.EQUAL;
-				break;
 			}
 
 			nameToCon.put(name, model.addConstr(expr, op, rhs.doubleValue(), name));
@@ -163,7 +162,6 @@ public class ProblemGurobi extends Problem {
 				break;
 			default:
 				varType = GRB.CONTINUOUS;
-				break;
 			}
 			
 			nameToVar.put(name, model.addVar(lowerBound, upperBound, 0, varType, name));

@@ -17,6 +17,7 @@ package net.sf.javailp;
 import ilog.concert.IloException;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
+import ilog.cplex.IloCplex.IntParam;
 
 /**
  * The {@code SolverCPLEX} is the {@code Solver} CPLEX.
@@ -26,7 +27,7 @@ import ilog.cplex.IloCplex.DoubleParam;
  */
 public class SolverCPLEX extends AbstractSolver {
 	
-	private IloCplex cplex;
+	private IloCplex model;
 	private Problem problem;
 	
 	/**
@@ -47,9 +48,9 @@ public class SolverCPLEX extends AbstractSolver {
 			if (this.problem != null) {
 				this.deleteProblem();
 			}
-			this.cplex = new IloCplex();
-			updateParameters(this.cplex);
-			this.problem = new ProblemCPLEX(this.cplex);
+			this.model = new IloCplex();
+			updateParameters();
+			this.problem = new ProblemCPLEX(this.model);
 			return this.problem;
 		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
@@ -75,7 +76,7 @@ public class SolverCPLEX extends AbstractSolver {
 	 */
 	public void deleteProblem() {
 		this.problem = null;
-		this.cplex.end();
+		this.model.end();
 	}
 
 	/*
@@ -85,40 +86,52 @@ public class SolverCPLEX extends AbstractSolver {
 	 */
 	public Result solve(Problem problem) {
 		boolean postSolve = false;
-		Object postsolve = parameters.get(Solver.POSTSOLVE);
-		if (postsolve != null && ((Number)postsolve).intValue() != 0 ) postSolve = true;
+		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
+		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
 		Result result = problem.optimize(postSolve);
 		
 		return result;
 	}
 
-	protected void updateParameters(IloCplex cplex) throws IloException {
-		Object timeout = parameters.get(Solver.TIMEOUT);
-		Object verbose = parameters.get(Solver.VERBOSE);
-		Object mipgap = parameters.get(Solver.MIPGAP);
+	protected void updateParameters() throws IloException {
+		Number timeout = parameters.get(Solver.TIMEOUT);
+		Number verbose = parameters.get(Solver.VERBOSE);
+		Number mipgap = parameters.get(Solver.MIPGAP);
+		Number method = parameters.get(Solver.METHOD);
 
-		if (timeout != null && timeout instanceof Number) {
-			Number number = (Number) timeout;
-			double value = number.doubleValue();
-			cplex.setParam(DoubleParam.TiLim, value);
+		if (timeout != null) {
+			double value = timeout.doubleValue();
+			this.model.setParam(DoubleParam.TiLim, value);
 		}
 		
-		if (verbose != null && verbose instanceof Number) {
-			Number number = (Number) verbose;
-			int value = number.intValue();
-
+		if (verbose != null) {
+			int value = verbose.intValue();
 			if (value == 0) {
-				cplex.setOut(null);
+				this.model.setOut(null);
 			}
 		}
 
-		if (mipgap != null && mipgap instanceof Number) {
-			Number number = (Number) mipgap;
-			double value = number.doubleValue();
-			cplex.setParam(DoubleParam.EpGap, value);
+		if (mipgap != null) {
+			double value = mipgap.doubleValue();
+			this.model.setParam(DoubleParam.EpGap, value);
 		}
 		
+		/*
+		0 CPX_ALG_AUTOMATIC Automatic: let CPLEX choose; default
+		1 CPX_ALG_PRIMAL Primal simplex
+		2 CPX_ALG_DUAL Dual simplex
+		3 CPX_ALG_NET Network simplex
+		4 CPX_ALG_BARRIER Barrier
+		5 CPX_ALG_SIFTING Sifting
+		6 CPX_ALG_CONCURRENT Concurrent (Dual, Barrier, and Primal) 
+		*/
+		// 0=automatic, 1=primal simplex, 2=dual simplex, 4=barrier, 6=concurrent
+		if (method != null) {
+			int value = method.intValue();
+			this.model.setParam(IntParam.RootAlg, value);
+		}
+
 		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));
 		System.out.println("parallel mode: "+cplex.getParam(IntParam.ParallelMode));
 		cplex.setParam(IntParam.Threads, 8);
