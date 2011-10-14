@@ -134,13 +134,25 @@ public class SolverGurobi extends AbstractSolver {
 			this.env.set(GRB.DoubleParam.MIPGap, value);
 		}
 		
-		// -1=automatic, 0=primal simplex, 1=dual simplex, 2=barrier, 3=concurrent, 4=deterministic concurrent
 		// standard for MIP root node relaxtion: dual simplex
-		//env.set(GRB.IntParam.Method, 2);
 		if (method != null) {
 			int value = method.intValue();
 			this.env.set(GRB.IntParam.Method, value);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.Solver#getInternalValueForID(int)
+	 */
+	public int getInternalValueForID(int ID) {
+		switch (ID) {
+			case Solver.METHOD_ID_AUTOMATIC: return -1;
+			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return 0;
+			case Solver.METHOD_ID_DUAL_SIMPLEX: return 1;
+			case Solver.METHOD_ID_BARRIER: return 2;
+			case Solver.METHOD_ID_CONCURRENT: return 3;
+			default: throw new IllegalArgumentException("invalid ID");
+		}
+	}
+	
 }

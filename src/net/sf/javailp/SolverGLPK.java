@@ -134,4 +134,14 @@ public class SolverGLPK extends AbstractSolver {
 			this.integerParameters.setMip_gap(value);
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.Solver#getInternalValueForID(int)
+	 */
+	public int getInternalValueForID(int ID) {
+		switch (ID) {
+			default: return -999;
+		}
+	}
+	
 }

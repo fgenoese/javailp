@@ -48,6 +48,12 @@ public interface Solver {
 	 * Identifier for the method value.
 	 */
 	public static final int METHOD = 4;
+	
+	public static final int METHOD_ID_AUTOMATIC 		= 1000;
+	public static final int METHOD_ID_PRIMAL_SIMPLEX 	= 1001;
+	public static final int METHOD_ID_DUAL_SIMPLEX		= 1002;
+	public static final int METHOD_ID_BARRIER			= 1003;
+	public static final int METHOD_ID_CONCURRENT		= 1004;
 
 	/**
 	 * Sets a parameter.
@@ -94,5 +100,12 @@ public interface Solver {
 	 * @return the result
 	 */
 	public Result solve(Problem problem);
+	
+	/**
+	 * Returns the solver-specific parameter value for an ID.
+	 * 
+	 * @return the parameter value
+	 */
+	public int getInternalValueForID(int ID);
 
 }

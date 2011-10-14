@@ -117,15 +117,6 @@ public class SolverCPLEX extends AbstractSolver {
 			this.model.setParam(DoubleParam.EpGap, value);
 		}
 		
-		/*
-		0 CPX_ALG_AUTOMATIC Automatic: let CPLEX choose; default
-		1 CPX_ALG_PRIMAL Primal simplex
-		2 CPX_ALG_DUAL Dual simplex
-		3 CPX_ALG_NET Network simplex
-		4 CPX_ALG_BARRIER Barrier
-		5 CPX_ALG_SIFTING Sifting
-		6 CPX_ALG_CONCURRENT Concurrent (Dual, Barrier, and Primal) 
-		*/
 		// 0=automatic, 1=primal simplex, 2=dual simplex, 4=barrier, 6=concurrent
 		if (method != null) {
 			int value = method.intValue();
@@ -137,5 +128,19 @@ public class SolverCPLEX extends AbstractSolver {
 		cplex.setParam(IntParam.Threads, 8);
 		System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));*/
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see net.sf.javailp.Solver#getInternalValueForID(int)
+	 */
+	public int getInternalValueForID(int ID) {
+		switch (ID) {
+			case Solver.METHOD_ID_AUTOMATIC: return 0;
+			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return 1;
+			case Solver.METHOD_ID_DUAL_SIMPLEX: return 2;
+			case Solver.METHOD_ID_BARRIER: return 4;
+			case Solver.METHOD_ID_CONCURRENT: return 6;
+			default: throw new IllegalArgumentException("invalid ID");
+		}
+	}
+	
 }
