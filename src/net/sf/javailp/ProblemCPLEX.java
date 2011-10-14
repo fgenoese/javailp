@@ -104,14 +104,14 @@ public class ProblemCPLEX extends Problem {
 			expr = model.sum(expressions.toArray(new IloNumExpr[0]));
 
 			switch (operator) {
-			case LE:
-				model.addLe(expr, rhs.doubleValue());
-				break;
-			case GE:
-				model.addGe(expr, rhs.doubleValue());
-				break;
-			default:
-				model.addEq(expr, rhs.doubleValue());
+				case LE:
+					model.addLe(expr, rhs.doubleValue());
+					break;
+				case GE:
+					model.addGe(expr, rhs.doubleValue());
+					break;
+				default:
+					model.addEq(expr, rhs.doubleValue());
 			}
 			conNames.add(name);
 		} catch (IloException e) {
@@ -133,14 +133,14 @@ public class ProblemCPLEX extends Problem {
 			
 			final IloNumVarType varType;
 			switch (type) {
-			case BOOL:
-				varType = IloNumVarType.Bool;
-				break;
-			case INT:
-				varType = IloNumVarType.Int;
-				break;
-			default:
-				varType = IloNumVarType.Float;
+				case BOOL:
+					varType = IloNumVarType.Bool;
+					break;
+				case INT:
+					varType = IloNumVarType.Int;
+					break;
+				default:
+					varType = IloNumVarType.Float;
 			}
 	
 			nameToVar.put(name, model.numVar(lowerBound, upperBound, varType));

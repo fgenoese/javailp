@@ -126,14 +126,14 @@ public class ProblemGLPK extends Problem {
 
 		final int op;
 		switch (operator) {
-		case LE:
-			op = GLPKConstants.GLP_UP;
-			break;
-		case GE:
-			op = GLPKConstants.GLP_LO;
-			break;
-		default:
-			op = GLPKConstants.GLP_FX;
+			case LE:
+				op = GLPKConstants.GLP_UP;
+				break;
+			case GE:
+				op = GLPKConstants.GLP_LO;
+				break;
+			default:
+				op = GLPKConstants.GLP_FX;
 		}
 
 		GLPK.glp_set_row_name(model, numberOfConstraints, name);
@@ -155,16 +155,16 @@ public class ProblemGLPK extends Problem {
 		
 		final int varType;
 		switch (type) {
-		case BOOL:
-			varType = GLPKConstants.GLP_BV;
-			numberOfIntegerVariables++;
-			break;
-		case INT:
-			varType = GLPKConstants.GLP_IV;
-			numberOfIntegerVariables++;
-			break;
-		default:
-			varType = GLPKConstants.GLP_CV;
+			case BOOL:
+				varType = GLPKConstants.GLP_BV;
+				numberOfIntegerVariables++;
+				break;
+			case INT:
+				varType = GLPKConstants.GLP_IV;
+				numberOfIntegerVariables++;
+				break;
+			default:
+				varType = GLPKConstants.GLP_CV;
 		}
 		
 		double lowerBound;

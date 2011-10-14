@@ -121,14 +121,14 @@ public class ProblemGurobi extends Problem {
 
 			final char op;
 			switch (operator) {
-			case GE: 
-				op = GRB.GREATER_EQUAL;
-				break;
-			case LE:
-				op = GRB.LESS_EQUAL;
-				break;
-			default:
-				op = GRB.EQUAL;
+				case GE:
+					op = GRB.GREATER_EQUAL;
+					break;
+				case LE:
+					op = GRB.LESS_EQUAL;
+					break;
+				default:
+					op = GRB.EQUAL;
 			}
 
 			nameToCon.put(name, model.addConstr(expr, op, rhs.doubleValue(), name));
@@ -154,14 +154,14 @@ public class ProblemGurobi extends Problem {
 			
 			final char varType;
 			switch (type) {
-			case BOOL:
-				varType = GRB.BINARY;
-				break;
-			case INT:
-				varType = GRB.INTEGER;
-				break;
-			default:
-				varType = GRB.CONTINUOUS;
+				case BOOL:
+					varType = GRB.BINARY;
+					break;
+				case INT:
+					varType = GRB.INTEGER;
+					break;
+				default:
+					varType = GRB.CONTINUOUS;
 			}
 			
 			nameToVar.put(name, model.addVar(lowerBound, upperBound, 0, varType, name));
