@@ -11,7 +11,7 @@
 
 	<!-- VERSIONING -->
 	<!-- <property name="version" value="snapshot-${date-flat}" /> -->
-	<property name="version" value="1.3a" />
+	<property name="version" value="1.31a" />
 	
 	<path id="compile.classpath">
 		<fileset dir="${lib.dir}" includes="*.jar" />
