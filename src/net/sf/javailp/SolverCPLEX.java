@@ -14,6 +14,9 @@
  */
 package net.sf.javailp;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ilog.concert.IloException;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
@@ -27,8 +30,8 @@ import ilog.cplex.IloCplex.IntParam;
  */
 public class SolverCPLEX extends AbstractSolver {
 	
-	private IloCplex model;
-	private Problem problem;
+	private Map<String, IloCplex> models = new HashMap<String, IloCplex>();
+	private Map<String, Problem> problems = new HashMap<String, Problem>();
 	
 	/**
 	 * Constructs a {@code SolverCPLEX}.
@@ -41,17 +44,19 @@ public class SolverCPLEX extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#createProblem()
+	 * @see net.sf.javailp.Solver#createProblem(String)
 	 */
-	public Problem createProblem() {
+	public Problem createProblem(String identifier) {
 		try {
-			if (this.problem != null) {
-				this.deleteProblem();
+			if (this.models.containsKey(identifier)) {
+				throw new OptimizationException("A problem with this identifier already exists.");
 			}
-			this.model = new IloCplex();
-			updateParameters();
-			this.problem = new ProblemCPLEX(this.model);
-			return this.problem;
+			IloCplex model = new IloCplex();
+			updateParameters(model);
+			this.models.put(identifier, model);
+			Problem problem = new ProblemCPLEX(model);
+			this.problems.put(identifier, problem);
+			return problem;
 		} catch (IloException e) {
 			throw new OptimizationException(e.getMessage());
 		}
@@ -60,23 +65,27 @@ public class SolverCPLEX extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#getProblem()
+	 * @see net.sf.javailp.Solver#getProblem(String)
 	 */
-	public Problem getProblem() {
-		if (this.problem == null) {
-			return this.createProblem();
+	public Problem getProblem(String identifier) {
+		if (!this.problems.containsKey(identifier)) {
+			return this.createProblem(identifier);
 		}
-		return this.problem;
+		return this.problems.get(identifier);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#deleteProblem()
+	 * @see net.sf.javailp.Solver#deleteProblem(String)
 	 */
-	public void deleteProblem() {
-		this.problem = null;
-		this.model.end();
+	public void deleteProblem(String identifier) {
+		if (this.problems.containsKey(identifier)) {
+			IloCplex model = this.models.get(identifier);
+			model.end();
+			this.models.remove(identifier);
+			this.problems.remove(identifier);
+		}
 	}
 
 	/*
@@ -94,7 +103,7 @@ public class SolverCPLEX extends AbstractSolver {
 		return result;
 	}
 
-	protected void updateParameters() throws IloException {
+	protected void updateParameters(IloCplex model) throws IloException {
 		Number timeout = parameters.get(Solver.TIMEOUT);
 		Number verbose = parameters.get(Solver.VERBOSE);
 		Number mipgap = parameters.get(Solver.MIPGAP);
@@ -102,25 +111,25 @@ public class SolverCPLEX extends AbstractSolver {
 
 		if (timeout != null) {
 			double value = timeout.doubleValue();
-			this.model.setParam(DoubleParam.TiLim, value);
+			model.setParam(DoubleParam.TiLim, value);
 		}
 		
 		if (verbose != null) {
 			int value = verbose.intValue();
 			if (value == 0) {
-				this.model.setOut(null);
+				model.setOut(null);
 			}
 		}
 
 		if (mipgap != null) {
 			double value = mipgap.doubleValue();
-			this.model.setParam(DoubleParam.EpGap, value);
+			model.setParam(DoubleParam.EpGap, value);
 		}
 		
 		// 0=automatic, 1=primal simplex, 2=dual simplex, 4=barrier, 6=concurrent
 		if (method != null) {
 			int value = method.intValue();
-			this.model.setParam(IntParam.RootAlg, value);
+			model.setParam(IntParam.RootAlg, value);
 		}
 
 		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));

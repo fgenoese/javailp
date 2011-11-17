@@ -14,6 +14,9 @@
  */
 package net.sf.javailp;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -28,8 +31,8 @@ import gurobi.GRBModel;
 public class SolverGurobi extends AbstractSolver {
 	
 	private GRBEnv env;
-	private GRBModel model;
-	private Problem problem;
+	private Map<String, GRBModel> models = new HashMap<String, GRBModel>();
+	private Map<String, Problem> problems = new HashMap<String, Problem>();
 	
 	/**
 	 * Constructs a {@code SolverGurobi}.
@@ -47,17 +50,19 @@ public class SolverGurobi extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#createProblem()
+	 * @see net.sf.javailp.Solver#createProblem(String)
 	 */
-	public Problem createProblem() {
+	public Problem createProblem(String identifier) {
 		try {
-			if (this.problem != null) {
-				this.deleteProblem();
-			}
 			updateParameters();
-			this.model = new GRBModel(this.env);
-			this.problem = new ProblemGurobi(this.env, this.model);
-			return this.problem;
+			if (this.models.containsKey(identifier)) {
+				throw new OptimizationException("A problem with this identifier already exists.");
+			}
+			GRBModel model = new GRBModel(this.env);
+			this.models.put(identifier, model);
+			Problem problem = new ProblemGurobi(this.env, model);
+			this.problems.put(identifier, problem);
+			return problem;
 		} catch (GRBException e) {
 			throw new OptimizationException("Error code: " + e.getErrorCode() + ". " + e.getMessage());
 		}
@@ -66,23 +71,27 @@ public class SolverGurobi extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#getProblem()
+	 * @see net.sf.javailp.Solver#getProblem(String)
 	 */
-	public Problem getProblem() {
-		if (this.problem == null) {
-			return this.createProblem();
+	public Problem getProblem(String identifier) {
+		if (!this.problems.containsKey(identifier)) {
+			return this.createProblem(identifier);
 		}
-		return this.problem;
+		return this.problems.get(identifier);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#deleteProblem()
+	 * @see net.sf.javailp.Solver#deleteProblem(String)
 	 */
-	public void deleteProblem() {
-		this.problem = null;
-		this.model.dispose();
+	public void deleteProblem(String identifier) {
+		if (this.problems.containsKey(identifier)) {
+			GRBModel model = this.models.get(identifier);
+			model.dispose();
+			this.models.remove(identifier);
+			this.problems.remove(identifier);
+		}
 	}
 
 	/*
@@ -100,7 +109,7 @@ public class SolverGurobi extends AbstractSolver {
 		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
 		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
-		Result result = this.problem.optimize(postSolve);
+		Result result = problem.optimize(postSolve);
 		
 		return result;
 	}

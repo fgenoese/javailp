@@ -73,23 +73,32 @@ public interface Solver {
 	public Map<Integer, Number> getParameters();
 	
 	/**
-	 * Returns a new optimization problem for this solver. If existent, the old one is deleted.
+	 * Returns a new optimization problem for this solver.
+	 * 
+	 * @param identifier
+	 *            the identifier of the problem
 	 * 
 	 * @return the optimization problem
 	 */
-	public Problem createProblem();
+	public Problem createProblem(String identifier);
 	
 	/**
-	 * Returns the current opimization problem for this solver. If not existent, a new one is created.
+	 * Returns the optimization problem for this solver identified by the parameter identifier.
+	 * 
+	 * @param identifier
+	 *            the identifier of the problem
 	 * 
 	 * @return the optimization problem
 	 */
-	public Problem getProblem();
+	public Problem getProblem(String identifier);
 	
 	/**
-	 * Deletes the opimization problem for this solver.
+	 * Deletes the optimization problem for this solver identified by the parameter identifier.
+	 * 
+	 * @param identifier
+	 *            the identifier of the problem
 	 */
-	public void deleteProblem();
+	public void deleteProblem(String identifier);
 
 	/**
 	 * Solves the optimization problem. Returns {@code null} if there exists no

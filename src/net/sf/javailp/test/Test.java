@@ -48,7 +48,7 @@ public class Test {
 		 * 
 		 */
 		// for one problem
-		Problem problem = solver.getProblem();
+		Problem problem = solver.getProblem("Test");
 		
 		problem.addVariable("x", VarType.INT, null, null);
 		problem.addVariable("y", VarType.INT, null, null);

@@ -14,6 +14,9 @@
  */
 package net.sf.javailp;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.gnu.glpk.GLPK;
 import org.gnu.glpk.GLPKConstants;
 import org.gnu.glpk.glp_iocp;
@@ -28,10 +31,8 @@ import org.gnu.glpk.glp_smcp;
  */
 public class SolverGLPK extends AbstractSolver {
 	
-	private glp_prob model;
-	private Problem problem;
-	private glp_smcp simplexParameters;
-	private glp_iocp integerParameters;
+	private Map<String, glp_prob> models = new HashMap<String, glp_prob>();
+	private Map<String, Problem> problems = new HashMap<String, Problem>();
 	
 	/**
 	 * Constructs a {@code SolverGLPK}.
@@ -44,42 +45,46 @@ public class SolverGLPK extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#createProblem()
+	 * @see net.sf.javailp.Solver#createProblem(String)
 	 */
-	public Problem createProblem() {
-		if (this.problem != null) {
-			this.deleteProblem();
+	public Problem createProblem(String identifier) {
+		if (this.models.containsKey(identifier)) {
+			throw new OptimizationException("A problem with this identifier already exists.");
 		}
-		this.model = GLPK.glp_create_prob();
-		this.simplexParameters = new glp_smcp();
-		this.integerParameters = new glp_iocp();
-		GLPK.glp_init_smcp(this.simplexParameters);
-		GLPK.glp_init_iocp(this.integerParameters);
-		this.updateParameters();
-		this.problem = new ProblemGLPK(this.model, this.simplexParameters, this.integerParameters);
-		return this.problem;
+		glp_prob model = GLPK.glp_create_prob();
+		this.models.put(identifier, model);
+		glp_smcp simplexParameters = new glp_smcp();
+		glp_iocp integerParameters = new glp_iocp();
+		GLPK.glp_init_smcp(simplexParameters);
+		GLPK.glp_init_iocp(integerParameters);
+		this.updateParameters(simplexParameters, integerParameters);
+		Problem problem = new ProblemGLPK(model, simplexParameters, integerParameters);
+		this.problems.put(identifier, problem);
+		return problem;
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#getProblem()
+	 * @see net.sf.javailp.Solver#getProblem(String)
 	 */
-	public Problem getProblem() {
-		if (this.problem == null) {
-			return this.createProblem();
+	public Problem getProblem(String identifier) {
+		if (!this.problems.containsKey(identifier)) {
+			return this.createProblem(identifier);
 		}
-		return this.problem;
+		return this.problems.get(identifier);
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#deleteProblem()
+	 * @see net.sf.javailp.Solver#deleteProblem(String)
 	 */
-	public void deleteProblem() {
-		this.problem = null;
-		GLPK.glp_delete_prob(model);
+	public void deleteProblem(String identifier) {
+		if (this.problems.containsKey(identifier)) {
+			this.models.remove(identifier);
+			this.problems.remove(identifier);
+		}
 	}
 
 	/*
@@ -92,20 +97,20 @@ public class SolverGLPK extends AbstractSolver {
 		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
 		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
-		Result result = this.problem.optimize(postSolve);
+		Result result = problem.optimize(postSolve);
 				
 		return result;
 	}
 	
-	protected void updateParameters() {
+	protected void updateParameters(glp_smcp simplexParameters, glp_iocp integerParameters) {
 		Number timeout = this.parameters.get(Solver.TIMEOUT);
 		Number verbose = this.parameters.get(Solver.VERBOSE);
 		Number mipgap = this.parameters.get(Solver.MIPGAP);
 
 		if (timeout != null) {
 			int value = timeout.intValue() * 1000;
-			this.integerParameters.setTm_lim(value);
-			this.simplexParameters.setTm_lim(value);
+			integerParameters.setTm_lim(value);
+			simplexParameters.setTm_lim(value);
 		}
 
 		if (verbose != null) {
@@ -125,13 +130,13 @@ public class SolverGLPK extends AbstractSolver {
 			default:
 				msgLevel = GLPKConstants.GLP_MSG_ALL;
 			}
-			this.simplexParameters.setMsg_lev(msgLevel);
-			this.integerParameters.setMsg_lev(msgLevel);
+			simplexParameters.setMsg_lev(msgLevel);
+			integerParameters.setMsg_lev(msgLevel);
 		}
 		
 		if (mipgap != null) {
 			double value = mipgap.doubleValue();
-			this.integerParameters.setMip_gap(value);
+			integerParameters.setMip_gap(value);
 		}
 	}
 	
