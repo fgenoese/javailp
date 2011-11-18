@@ -222,7 +222,7 @@ public class ProblemGurobi extends Problem {
 		try {
 			model.optimize();
 			if (model.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
-				throw new OptimizationException("No optimal solution found.");
+				throw new OptimizationException("No optimal solution found [status: "+model.get(GRB.IntAttr.Status)+"].");
 			}
 			
 			Result result = new ResultImpl(this.objectiveFunction);
@@ -233,7 +233,7 @@ public class ProblemGurobi extends Problem {
 				fixed.getEnv().set(GRB.IntParam.Presolve, 0);
 				fixed.optimize();
 				if (fixed.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
-					throw new OptimizationException("No optimal solution found.");
+					throw new OptimizationException("No optimal solution found [status: "+model.get(GRB.IntAttr.Status)+"].");
 				}
 				
 				GRBVar[] variables		  	= fixed.getVars();
