@@ -16,6 +16,7 @@ package net.sf.javailp;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import ilog.concert.IloException;
 import ilog.cplex.IloCplex;
@@ -46,7 +47,7 @@ public class SolverCPLEX extends AbstractSolver {
 	 * 
 	 * @see net.sf.javailp.Solver#createProblem(String)
 	 */
-	public Problem createProblem(String identifier) {
+	public synchronized Problem createProblem(String identifier) {
 		try {
 			if (this.models.containsKey(identifier)) {
 				throw new OptimizationException("A problem with this identifier already exists.");
@@ -67,7 +68,7 @@ public class SolverCPLEX extends AbstractSolver {
 	 * 
 	 * @see net.sf.javailp.Solver#getProblem(String)
 	 */
-	public Problem getProblem(String identifier) {
+	public synchronized Problem getProblem(String identifier) {
 		if (!this.problems.containsKey(identifier)) {
 			return this.createProblem(identifier);
 		}
@@ -77,14 +78,23 @@ public class SolverCPLEX extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see net.sf.javailp.Solver#getProblemNames()
+	 */
+	public synchronized Set<String> getProblemIdentifiers() {
+		return this.problems.keySet();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.javailp.Solver#deleteProblem(String)
 	 */
-	public void deleteProblem(String identifier) {
+	public synchronized void deleteProblem(String identifier) {
 		if (this.problems.containsKey(identifier)) {
 			IloCplex model = this.models.get(identifier);
 			model.end();
-			this.models.remove(identifier);
 			this.problems.remove(identifier);
+			this.models.remove(identifier);
 		}
 	}
 

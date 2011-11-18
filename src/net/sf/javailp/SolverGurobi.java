@@ -16,6 +16,7 @@ package net.sf.javailp;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -52,7 +53,7 @@ public class SolverGurobi extends AbstractSolver {
 	 * 
 	 * @see net.sf.javailp.Solver#createProblem(String)
 	 */
-	public Problem createProblem(String identifier) {
+	public synchronized Problem createProblem(String identifier) {
 		try {
 			updateParameters();
 			if (this.models.containsKey(identifier)) {
@@ -73,7 +74,7 @@ public class SolverGurobi extends AbstractSolver {
 	 * 
 	 * @see net.sf.javailp.Solver#getProblem(String)
 	 */
-	public Problem getProblem(String identifier) {
+	public synchronized Problem getProblem(String identifier) {
 		if (!this.problems.containsKey(identifier)) {
 			return this.createProblem(identifier);
 		}
@@ -83,14 +84,23 @@ public class SolverGurobi extends AbstractSolver {
 	/*
 	 * (non-Javadoc)
 	 * 
+	 * @see net.sf.javailp.Solver#getProblemNames()
+	 */
+	public synchronized Set<String> getProblemIdentifiers() {
+		return this.problems.keySet();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.javailp.Solver#deleteProblem(String)
 	 */
-	public void deleteProblem(String identifier) {
+	public synchronized void deleteProblem(String identifier) {
 		if (this.problems.containsKey(identifier)) {
 			GRBModel model = this.models.get(identifier);
 			model.dispose();
-			this.models.remove(identifier);
 			this.problems.remove(identifier);
+			this.models.remove(identifier);
 		}
 	}
 

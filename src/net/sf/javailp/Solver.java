@@ -15,6 +15,7 @@
 package net.sf.javailp;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The {@code Solver}.
@@ -91,6 +92,13 @@ public interface Solver {
 	 * @return the optimization problem
 	 */
 	public Problem getProblem(String identifier);
+	
+	/**
+	 * Returns the set of problem identifiers currently stored in the solver.
+	 * 
+	 * @return the set of problem identifiers
+	 */
+	public Set<String> getProblemIdentifiers();
 	
 	/**
 	 * Deletes the optimization problem for this solver identified by the parameter identifier.
