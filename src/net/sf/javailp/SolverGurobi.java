@@ -157,6 +157,7 @@ public class SolverGurobi extends AbstractSolver {
 		if (method != null) {
 			int value = method.intValue();
 			this.env.set(GRB.IntParam.Method, value);
+			this.env.set(GRB.IntParam.NodeMethod, value);
 		}
 	}
 
@@ -165,12 +166,12 @@ public class SolverGurobi extends AbstractSolver {
 	 */
 	public int getInternalValueForID(int ID) {
 		switch (ID) {
-			case Solver.METHOD_ID_AUTOMATIC: return -1;
-			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return 0;
-			case Solver.METHOD_ID_DUAL_SIMPLEX: return 1;
-			case Solver.METHOD_ID_BARRIER: return 2;
-			case Solver.METHOD_ID_CONCURRENT: return 3;
-			default: throw new IllegalArgumentException("invalid ID");
+			case Solver.METHOD_ID_AUTOMATIC: return GRB.METHOD_AUTO;
+			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return GRB.METHOD_PRIMAL;
+			case Solver.METHOD_ID_DUAL_SIMPLEX: return GRB.METHOD_DUAL;
+			case Solver.METHOD_ID_BARRIER: return GRB.METHOD_BARRIER;
+			case Solver.METHOD_ID_CONCURRENT: return GRB.METHOD_CONCURRENT;
+			default: throw new IllegalArgumentException("invalid method ID");
 		}
 	}
 	

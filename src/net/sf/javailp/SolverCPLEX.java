@@ -140,6 +140,7 @@ public class SolverCPLEX extends AbstractSolver {
 		if (method != null) {
 			int value = method.intValue();
 			model.setParam(IntParam.RootAlg, value);
+			model.setParam(IntParam.NodeAlg, value);
 		}
 
 		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));
@@ -153,12 +154,12 @@ public class SolverCPLEX extends AbstractSolver {
 	 */
 	public int getInternalValueForID(int ID) {
 		switch (ID) {
-			case Solver.METHOD_ID_AUTOMATIC: return 0;
-			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return 1;
-			case Solver.METHOD_ID_DUAL_SIMPLEX: return 2;
-			case Solver.METHOD_ID_BARRIER: return 4;
-			case Solver.METHOD_ID_CONCURRENT: return 6;
-			default: throw new IllegalArgumentException("invalid ID");
+			case Solver.METHOD_ID_AUTOMATIC: return IloCplex.Algorithm.Auto;
+			case Solver.METHOD_ID_PRIMAL_SIMPLEX: return IloCplex.Algorithm.Primal;
+			case Solver.METHOD_ID_DUAL_SIMPLEX: return IloCplex.Algorithm.Dual;
+			case Solver.METHOD_ID_BARRIER: return IloCplex.Algorithm.Barrier;
+			case Solver.METHOD_ID_CONCURRENT: return IloCplex.Algorithm.Concurrent;
+			default: throw new IllegalArgumentException("invalid method ID");
 		}
 	}
 	
