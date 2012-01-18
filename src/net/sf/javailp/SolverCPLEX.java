@@ -140,7 +140,7 @@ public class SolverCPLEX extends AbstractSolver {
 		if (method != null) {
 			int value = method.intValue();
 			model.setParam(IntParam.RootAlg, value);
-			model.setParam(IntParam.NodeAlg, value);
+			//model.setParam(IntParam.NodeAlg, value);
 		}
 
 		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));

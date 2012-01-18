@@ -39,6 +39,7 @@ public class Test {
 	public static void test(Solver solver) {
 		solver.setParameter(Solver.VERBOSE, 0);
 		solver.setParameter(Solver.TIMEOUT, 100); // set timeout to 100 seconds
+		solver.setParameter(Solver.METHOD,	solver.getInternalValueForID(Solver.METHOD_ID_AUTOMATIC));
 
 		/**
 		 * Constructing a Problem: Maximize: 143x+60y Subject to: 120x+210y <=

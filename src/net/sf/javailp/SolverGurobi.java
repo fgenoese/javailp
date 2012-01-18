@@ -157,7 +157,7 @@ public class SolverGurobi extends AbstractSolver {
 		if (method != null) {
 			int value = method.intValue();
 			this.env.set(GRB.IntParam.Method, value);
-			this.env.set(GRB.IntParam.NodeMethod, value);
+			//this.env.set(GRB.IntParam.NodeMethod, value);
 		}
 	}
 
