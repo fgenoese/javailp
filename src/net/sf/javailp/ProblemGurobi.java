@@ -19,6 +19,7 @@ import gurobi.GRB.DoubleAttr;
 public class ProblemGurobi extends Problem {
 	
 	private GRBModel model;
+	private String identifier;
 	private boolean hasChanged 					= false;
 	private Map<String, GRBVar> nameToVar 		= new HashMap<String, GRBVar>();
 	private Map<String, GRBConstr> nameToCon 	= new HashMap<String, GRBConstr>();
@@ -28,8 +29,9 @@ public class ProblemGurobi extends Problem {
 	 * Constructs a {@code ProblemGurobi}.
 	 * 
 	 */
-	protected ProblemGurobi(GRBEnv env, GRBModel model) {
+	protected ProblemGurobi(GRBEnv env, GRBModel model, String identifier) {
 		this.model = model;
+		this.identifier = identifier;
 	}
 
 	/* (non-Javadoc)
@@ -114,7 +116,8 @@ public class ProblemGurobi extends Problem {
 				if (var == null) {
 					throw new IllegalArgumentException(
 					"Variables in a linear expression must be added to the problem first. " +
-					"(missing: "+term.getVariableName()+")");
+					"(missing: "+term.getVariableName()+
+					", in constraint: "+name+")");
 				}
 				expr.addTerm(term.getCoefficient().doubleValue(), var);
 			}
@@ -215,13 +218,19 @@ public class ProblemGurobi extends Problem {
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.sf.javailp.AbstractProblem#optimize(boolean)
+	 * @see net.sf.javailp.AbstractProblem#optimize(boolean, boolean)
 	 */
-	protected Result optimize(boolean postSolve) {
+	protected Result optimize(boolean postSolve, boolean activateLog) {
 		int i;
 		try {
 			model.optimize();
+			if (activateLog) {
+				model.write(this.identifier+".lp.bz2");
+				model.write(this.identifier+".mps.bz2");
+			}
 			if (model.get(GRB.IntAttr.Status) != GRB.OPTIMAL) {
+				//model.computeIIS();
+				//model.write(this.identifier+".ilp.bz2");
 				throw new OptimizationException("No optimal solution found [status: "+model.get(GRB.IntAttr.Status)+"].");
 			}
 			

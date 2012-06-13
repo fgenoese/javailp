@@ -269,9 +269,9 @@ public class ProblemGLPK extends Problem {
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.sf.javailp.AbstractProblem#optimize(boolean)
+	 * @see net.sf.javailp.AbstractProblem#optimize(boolean, boolean)
 	 */
-	protected Result optimize(boolean postSolve) {
+	protected Result optimize(boolean postSolve, boolean activateLog) {
 		int status;
 		Result result = new ResultImpl(this.objectiveFunction);
 		

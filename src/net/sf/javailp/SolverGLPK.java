@@ -103,11 +103,15 @@ public class SolverGLPK extends AbstractSolver {
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
+		return this.solve(problem, false);
+	}
+	
+	public Result solve(Problem problem, boolean activateLog) {
 		boolean postSolve = false;
 		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
 		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
-		Result result = problem.optimize(postSolve);
+		Result result = problem.optimize(postSolve, activateLog);
 				
 		return result;
 	}

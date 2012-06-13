@@ -61,7 +61,7 @@ public class SolverGurobi extends AbstractSolver {
 			}
 			GRBModel model = new GRBModel(this.env);
 			this.models.put(identifier, model);
-			Problem problem = new ProblemGurobi(this.env, model);
+			Problem problem = new ProblemGurobi(this.env, model, identifier);
 			this.problems.put(identifier, problem);
 			return problem;
 		} catch (GRBException e) {
@@ -110,6 +110,10 @@ public class SolverGurobi extends AbstractSolver {
 	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
 	 */
 	public Result solve(Problem problem) {
+		return this.solve(problem, false);
+	}
+	
+	public Result solve(Problem problem, boolean activateLog) {
 		
 		if (this.env == null) {
 			throw new OptimizationException("GRBEnv must be initialized before any problem can be solved.");
@@ -119,7 +123,7 @@ public class SolverGurobi extends AbstractSolver {
 		Number postsolve = this.parameters.get(Solver.POSTSOLVE);
 		if (postsolve != null && postsolve.intValue() != 0 ) postSolve = true;
 		
-		Result result = problem.optimize(postSolve);
+		Result result = problem.optimize(postSolve, activateLog);
 		
 		return result;
 	}

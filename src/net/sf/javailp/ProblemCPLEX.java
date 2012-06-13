@@ -186,9 +186,9 @@ public class ProblemCPLEX extends Problem {
 	}
 
 	/* (non-Javadoc)
-	 * @see net.sf.javailp.AbstractProblem#optimize(boolean)
+	 * @see net.sf.javailp.AbstractProblem#optimize(boolean, boolean)
 	 */
-	protected Result optimize(boolean postSolve) {
+	protected Result optimize(boolean postSolve, boolean activateLog) {
 		try {
 			if (!model.solve()) {
 				throw new OptimizationException("No optimal solution found.");

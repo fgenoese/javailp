@@ -119,6 +119,18 @@ public interface Solver {
 	public Result solve(Problem problem);
 	
 	/**
+	 * Solves the optimization problem. Returns {@code null} if there exists no
+	 * feasible solution for the problem.
+	 * 
+	 * @param problem
+	 *            the optimization problem
+	 * @param activateLog
+	 * 			  a switch to activate/deactivate the logging
+	 * @return the result
+	 */
+	public Result solve(Problem problem, boolean activateLog);
+	
+	/**
 	 * Returns the solver-specific parameter value for an ID.
 	 * 
 	 * @return the parameter value
