@@ -133,6 +133,7 @@ public class SolverGurobi extends AbstractSolver {
 		Number verbose = this.parameters.get(Solver.VERBOSE);
 		Number mipgap = this.parameters.get(Solver.MIPGAP);
 		Number method = this.parameters.get(Solver.METHOD);
+		Number threads = this.parameters.get(Solver.THREADS);
 
 		if (timeout != null) {
 			double value = timeout.doubleValue();
@@ -162,6 +163,12 @@ public class SolverGurobi extends AbstractSolver {
 			int value = method.intValue();
 			this.env.set(GRB.IntParam.Method, value);
 			//this.env.set(GRB.IntParam.NodeMethod, value);
+		}
+		
+		if (threads != null) {
+			int value = threads.intValue();
+			value = Math.max(0, value);
+			this.env.set(GRB.IntParam.Threads, value);
 		}
 	}
 

@@ -55,6 +55,11 @@ public interface Solver {
 	public static final int METHOD_ID_DUAL_SIMPLEX		= 1002;
 	public static final int METHOD_ID_BARRIER			= 1003;
 	public static final int METHOD_ID_CONCURRENT		= 1004;
+	
+	/**
+	 * Identifier for the thread count value.
+	 */
+	public static final int THREADS = 5;
 
 	/**
 	 * Sets a parameter.

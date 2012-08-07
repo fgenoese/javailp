@@ -122,6 +122,7 @@ public class SolverCPLEX extends AbstractSolver {
 		Number verbose = parameters.get(Solver.VERBOSE);
 		Number mipgap = parameters.get(Solver.MIPGAP);
 		Number method = parameters.get(Solver.METHOD);
+		Number threads = this.parameters.get(Solver.THREADS);
 
 		if (timeout != null) {
 			double value = timeout.doubleValue();
@@ -146,11 +147,12 @@ public class SolverCPLEX extends AbstractSolver {
 			model.setParam(IntParam.RootAlg, value);
 			//model.setParam(IntParam.NodeAlg, value);
 		}
-
-		/*System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));
-		System.out.println("parallel mode: "+cplex.getParam(IntParam.ParallelMode));
-		cplex.setParam(IntParam.Threads, 8);
-		System.out.println("number of threads: "+cplex.getParam(IntParam.Threads));*/
+		
+		if (threads != null) {
+			int value = threads.intValue();
+			value = Math.max(0, value);
+			model.setParam(IntParam.Threads, value);
+		}
 	}
 	
 	/* (non-Javadoc)
